@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SANRO Superadmin</string>
+    <string name="network_error_title">Superadmin tidak dapat diakses</string>
+    <string name="network_error_detail">Periksa koneksi internet, lalu coba lagi. Data tetap tersimpan di server SANRO.</string>
+    <string name="ssl_error_detail">Koneksi aman gagal diverifikasi. Halaman diblokir untuk melindungi akun Superadmin.</string>
+    <string name="retry">Coba lagi</string>
+    <string name="exit_title">Keluar aplikasi?</string>
+    <string name="exit_message">Sesi di server tidak otomatis diakhiri. Gunakan tombol Keluar di dashboard untuk logout.</string>
+    <string name="exit">Tutup aplikasi</string>
+    <string name="cancel">Batal</string>
+</resources>
