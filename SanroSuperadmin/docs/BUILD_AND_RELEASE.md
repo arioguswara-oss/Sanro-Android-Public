@@ -28,3 +28,12 @@
 
 ## Test Autofill V1.0.2
 In Android Settings, enable a trusted Autofill service/Google Password Manager. Start from an expired or logged-out session, log in via the production form, accept any OS save prompt if offered, then log out and check suggestions on next login. The save prompt is provider-controlled, not guaranteed. No account details or screenshots with credentials should be posted to public GitHub Actions.
+
+## CI unsigned Release Candidate V1.0.2 — no signing credentials in repository
+- Workflow: `.github/workflows/sanro-superadmin-android-release-unsigned.yml` (manual or one-time initial workflow push).
+- Output: `app-release-unsigned.apk`, verified package `com.sanrotech.superadmin`, versionCode `3`, versionName `1.0.2`.
+- **Do not install the unsigned APK:** it must be signed with the Owner-owned release keystore kept off GitHub and all cloud services.
+- On Windows with official Android SDK Build Tools installed, run `zipalign` on the unsigned candidate, then `apksigner sign --ks "<local-key-path>" --ks-key-alias sanro_superadmin --out "<local-signed-apk>" "<aligned-apk>"`. Enter store and key passwords interactively, never on a command line or in shared logs.
+- Validate locally with `apksigner verify --verbose --print-certs "<local-signed-apk>"` and compare SHA-256 to the locally verified release keystore fingerprint; use `aapt dump badging` to verify the expected package and version.
+- First release must be fresh-installed: debug app has ID `com.sanrotech.superadmin.debug` and different signing identity. Do not use debug builds as release upgrades.
+- Keep backup keystore in a separate secure location and preserve both passwords; never upload key/passwords, or signed private release artifact, to the public repository.
