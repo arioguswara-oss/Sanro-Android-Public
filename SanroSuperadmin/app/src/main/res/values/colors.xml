@@ -3,4 +3,5 @@
     <color name="sanro_blue">#173CAC</color>
     <color name="sanro_background">#F3F5FA</color>
     <color name="sanro_text">#18243B</color>
+    <color name="sanro_icon_background">#FFFFFF</color>
 </resources>

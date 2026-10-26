@@ -9,7 +9,7 @@
 ## Private CI build
 - Opening/updating the pull request triggers a restricted GitHub Actions build for `SanroSuperadmin/**` changes, if Actions is enabled for the repository.
 - CI provisions Java 17, Android SDK 35, Gradle 8.9; runs unit tests + lint + assembles debug.
-- Retrieve `sanro-superadmin-v1.0.0-debug` from workflow run artifacts **only after SUCCESS**.
+- Retrieve `sanro-superadmin-v1.0.1-debug` from workflow run artifacts **only after SUCCESS**.
 - The manual `workflow_dispatch` option is intended for after the workflow file reaches the default branch; do not rely on dispatch before merge.
 - Do not distribute debug APK as a production release.
 

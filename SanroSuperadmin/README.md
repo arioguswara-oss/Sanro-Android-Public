@@ -1,15 +1,18 @@
-# SANRO Superadmin Android — Private APK V1.0.0 candidate
+# SANRO Superadmin Android — Private APK V1.0.1 candidate
 
 Android-only native WebView shell for the existing SANRO Superadmin server.
 
 - Server: `https://sanrotech.com/superadmin/login`
 - Package: `com.sanrotech.superadmin`
-- Version: `1.0.0` (`versionCode=1`)
+- Version: `1.0.1` (`versionCode=1`)
 - Min SDK 26, compile/target SDK 35, Java 17, Gradle 8.9, AGP 8.7.3
 - No Room, SQLite, local operational database, printers, Bluetooth, camera or embedded credentials.
 - Debug builds have application ID `com.sanrotech.superadmin.debug` so they do not overwrite Owner-signed releases.
 - Release APK is **NOT** signed by this repository. Create/backup Owner's private release keystore separately.
 - GitHub Actions `workflow_dispatch` can build a debug/test APK; see `docs/BUILD_AND_RELEASE.md`.
+
+## Branding
+Launcher icon uses the approved SANRO Superadmin brand mark, cropped from the Owner-provided logo on 26 October 2026. Only the emblem is used at small launcher sizes; the provided design contains the full SANRO Superadmin wordmark. Icon is a proprietary SANRO brand asset.
 
 ## Security/operational principles
 
