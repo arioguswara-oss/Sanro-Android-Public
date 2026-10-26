@@ -1,10 +1,10 @@
-# SANRO Superadmin Android — Private APK V1.0.1 candidate
+# SANRO Superadmin Android — Private APK V1.0.2 candidate
 
 Android-only native WebView shell for the existing SANRO Superadmin server.
 
 - Server: `https://sanrotech.com/superadmin/login`
 - Package: `com.sanrotech.superadmin`
-- Version: `1.0.1` (`versionCode=1`)
+- Version: `1.0.2` (`versionCode=3`)
 - Min SDK 26, compile/target SDK 35, Java 17, Gradle 8.9, AGP 8.7.3
 - No Room, SQLite, local operational database, printers, Bluetooth, camera or embedded credentials.
 - Debug builds have application ID `com.sanrotech.superadmin.debug` so they do not overwrite Owner-signed releases.
@@ -13,6 +13,9 @@ Android-only native WebView shell for the existing SANRO Superadmin server.
 
 ## Branding
 Launcher icon uses the approved SANRO Superadmin brand mark, cropped from the Owner-provided logo on 26 October 2026. Only the emblem is used at small launcher sizes; the provided design contains the full SANRO Superadmin wordmark. Icon is a proprietary SANRO brand asset.
+
+## Password Autofill (V1.0.2)
+The native WebView opts into Android Autofill, and the existing server HTML uses `autocomplete="username"` and `autocomplete="current-password"`. After a successful login page -> dashboard transition, the activity commits the Autofill context so the **user-selected** password manager can offer to save. Android / the provider controls whether an actual prompt or credential suggestion appears. The app never reads or persists the password natively, and no hardcoded credentials are shipped. Credential sharing with Chrome/website may additionally require Digital Asset Links and the final app's signing certificate; not included in this update. The server still owns authentication and its eight-hour session timeout.
 
 ## Security/operational principles
 

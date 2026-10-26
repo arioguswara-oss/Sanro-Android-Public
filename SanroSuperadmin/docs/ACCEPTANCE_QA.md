@@ -1,4 +1,4 @@
-# Android private V1.0.0 acceptance checklist
+# Android private V1.0.2 acceptance checklist
 
 | Gate | Expected result | Status |
 | --- | --- | --- |
@@ -15,6 +15,9 @@
 | Navigation | External / unsafe schemes rejected; only production Superadmin loads | PENDING |
 | Mobile | Orientation, system navigation, keyboard, safe areas on target devices | PENDING |
 | Privacy | No embedded secrets; backup disabled; screenshots in recents disabled Android 13+ | PENDING |
+| Password Autofill enabled | On successful login, OS password manager may offer save; verify next login suggestions; do not type password into logs | PENDING DEVICE QA |
+| Password Autofill disabled | Login works by manual entry with no new errors | PENDING DEVICE QA |
+| Credential security | Saved credentials remain in user-selected manager, not local SANRO app database | PENDING DEVICE QA |
 | Signing | Owner-owned release key securely backed up and signed release tested | PENDING |
 
 **Release blocked until all applicable gates PASS.** Never record secrets/test passwords in the repository.

@@ -9,7 +9,7 @@
 ## Private CI build
 - Opening/updating the pull request triggers a restricted GitHub Actions build for `SanroSuperadmin/**` changes, if Actions is enabled for the repository.
 - CI provisions Java 17, Android SDK 35, Gradle 8.9; runs unit tests + lint + assembles debug.
-- Retrieve `sanro-superadmin-v1.0.1-debug` from workflow run artifacts **only after SUCCESS**.
+- Retrieve `sanro-superadmin-v1.0.2-debug` from workflow run artifacts **only after SUCCESS**.
 - The manual `workflow_dispatch` option is intended for after the workflow file reaches the default branch; do not rely on dispatch before merge.
 - Do not distribute debug APK as a production release.
 
@@ -25,3 +25,6 @@
 - Check dashboard tenants, read-only settings, User Management and Audit Performance views.
 - Test Android 13/14/15/16, rotation, insets/keyboard, poor network, SSL certificate error, Android Back and logout/reopen.
 - Confirm security and accessibility of any new Superadmin web features added after repo baseline.
+
+## Test Autofill V1.0.2
+In Android Settings, enable a trusted Autofill service/Google Password Manager. Start from an expired or logged-out session, log in via the production form, accept any OS save prompt if offered, then log out and check suggestions on next login. The save prompt is provider-controlled, not guaranteed. No account details or screenshots with credentials should be posted to public GitHub Actions.

@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.view.WindowManager;
+import android.view.autofill.AutofillManager;
 import android.window.OnBackInvokedDispatcher;
 import android.webkit.CookieManager;
 import android.webkit.SslErrorHandler;
@@ -32,6 +33,7 @@ public final class MainActivity extends Activity {
     private TextView errorDetails;
     private boolean pageLoadFailed;
     private boolean dashboardSessionReached;
+    private boolean loginFormVisited;
 
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,6 +65,9 @@ public final class MainActivity extends Activity {
 
     private void setupWebView() {
         WebView.setWebContentsDebuggingEnabled(false);
+        // Android's selected password manager may autofill the WebView HTML fields.
+        // Never store or inspect credentials in native app code.
+        webView.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_YES);
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true); // Required by the production dashboard navigation guard.
         settings.setDomStorageEnabled(false); // No PWA/offline client state required.
@@ -98,9 +103,17 @@ public final class MainActivity extends Activity {
             @Override public void onPageFinished(WebView view, String url) {
                 if (pageLoadFailed || !NavigationPolicy.isInternal(url)) return;
                 if (NavigationPolicy.isLogin(url)) {
+                    loginFormVisited = true;
                     dashboardSessionReached = false;
                     view.clearHistory(); // Logout/expiry cannot navigate back into a protected page.
                 } else if (NavigationPolicy.isDashboard(url) && !dashboardSessionReached) {
+                    // Save is offered only after confirmed navigation to authenticated dashboard.
+                    // The Autofill provider decides whether a save prompt is appropriate.
+                    if (loginFormVisited) {
+                        AutofillManager autofill = getSystemService(AutofillManager.class);
+                        if (autofill != null && autofill.isEnabled()) autofill.commit();
+                        loginFormVisited = false;
+                    }
                     dashboardSessionReached = true;
                     view.clearHistory(); // Do not keep the login form in Android Back history.
                 }
