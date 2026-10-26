@@ -1,4 +1,4 @@
-# SANRO Superadmin Android — Private APK V1.0.2 candidate
+# SANRO Superadmin Android — Private APK V1.0.2 (BASELINE LOCKED)
 
 Android-only native WebView shell for the existing SANRO Superadmin server.
 
@@ -25,4 +25,4 @@ First-party HttpOnly server cookies remain the only session mechanism. WebView n
 
 This standalone project is new. Do not edit existing `WORK_V1_0_5`, POS, Stock, server backend, database, signing assets or production. Source version in the Superadmin repository is not proof that the LIVE production runtime matches that commit. Owner approval remains required for production changes.
 
-**Status**: code candidate / not device tested / no production deployment / no signed release.
+**Status (2026-10-26)**: Owner-verified Android V1.0.2 private signed release baseline LOCKED. GitHub contains source and unsigned CI candidates only; Owner holds the locally signed APK and release keystore separately. See [LOCK decision / UAT evidence / next roadmap](docs/BASELINE_LOCK_V1.0.2.md). Google Sign-In and Cloudflare protections are future discovery items, NOT part of the locked release.
