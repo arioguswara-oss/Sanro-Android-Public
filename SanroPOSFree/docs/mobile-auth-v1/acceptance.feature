@@ -106,11 +106,22 @@ Feature: Native Free activation and local operational authority
       | missing or tampered monotonic time anchor   |
       | unknown enum, missing field or invalid JSON |
 
+  Scenario: Phone restart during active 24-hour offline lease locks writes
+    Given the authorized K1 mobile installation holds a server-signed lease with 20 hours remaining
+    And its local products and committed transaction history are persisted in Room
+    When the phone restarts and both Wi-Fi and mobile network are unavailable
+    Then no new product, stock, cart checkout or cash-close writes are permitted
+    And existing Room data is never erased solely due to offline reboot
+    When verified HTTPS connectivity resumes and K1 completes server revalidation
+    Then writes can resume only under current authorized account, tenant, device, subscription and valid lease
+    And no previous lease is silently extended or transferred to another device
+
   Scenario: Clock rollback cannot extend offline operations
     Given K1 has valid trusted server time anchored to elapsedRealtime
     When wall time moves backward or forward
     Then the lease deadline follows monotonic elapsed time
     And reboot or missing boot anchor requires online revalidation for writes
+    And an otherwise unexpired old lease does not permit writes after reboot until successful server revalidation of account, device, tenant and entitlement
     And expiry at the exclusive deadline rolls back an in-flight Room checkout
     And entitled local history remains retained and read-only
 
