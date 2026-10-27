@@ -11,7 +11,7 @@ android {
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
     buildTypes {
-        debug { applicationIdSuffix '.debug' }
+        debug { applicationIdSuffix '.mvpdebug' }
         release { minifyEnabled false }
     }
     testOptions { unitTests.includeAndroidResources = true }
