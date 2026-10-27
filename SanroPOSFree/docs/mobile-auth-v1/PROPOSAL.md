@@ -150,6 +150,10 @@ unknown/retired kid; old key verification retained for outstanding lease duratio
 Signing/DB failure issues no unrecorded lease; max lease expiry recorded before
 reply (conservative reservation is safe after lost response).
 
+## Owner-approved offline lease — LOCKED 2026-10-28
+
+**Decision #001 / Option A: maximum signed offline write lease = 24 hours.** The issued lease expires at the earlier of `server_now + 24 hours` and the authoritative entitlement end. A device may operate offline only within a valid, verified lease and authorized state. Reconnection may renew it after server validation; an outage never extends it. Once expired, block new writes without deleting Room history, consistent with the approved read-only-after-expiry rule. Device transfer is strict: the replacement cannot write until the maximum outstanding lease on the old device has expired, potentially up to 24 hours. Immediate revocation of an unreachable offline device cannot be guaranteed. This establishes a maximum offline revocation delay of up to 24 hours for a newly issued lease, **not** a promise of instant remote revocation. The reboot/trusted-time proof behavior remains an OPEN implementation/product decision. No online authentication, server adapter, offline lease issuer, production activation or data migration is approved by selecting this duration.
+
 ## Single device, offline time and recovery
 
 Lock key for Free operational slot is `(tenant_id, product=POS)`, not email.
@@ -159,9 +163,7 @@ slot. Every mobile issuer/refresh/recovery path coordinates on the same durable
 slot row with epoch CAS/row lock. Missing mobile ledger cannot silently fall back
 to old sessions. Existing browser recovery cannot release that mobile slot.
 
-Lease duration L and revocation latency R require Owner policy selection. Fail-
-closed default before selection: **no offline write lease issued**. After approval,
-`exp = min(server_now + L, authoritative_entitlement_end)`; outages do not extend it.
+Owner LOCKED maximum lease duration **L = 24 hours**, with up to **24 hours** of delayed offline revocation while a previously issued lease remains valid. **No offline write lease may be issued until the backend issuer, signing/verification, device binding, and entitlement gates have passed staging/Owner approval.** When implemented, `exp = min(server_now + 24 hours, authoritative_entitlement_end)`; outages do not extend it.
 Unknown network state does not erase a previously verified lease; known revocation
 locks immediately. Offline revocation cannot be instantaneous. Phone reboot or
 loss of trusted time anchor requires online revalidation for writes (conservative
@@ -186,8 +188,7 @@ expires in 10 minutes, then reauthentication is required. A new transfer must no
 extend or resurrect old leases. Server time governs all release decisions.
 Immediate transfer with old device offline allows overlap; it is not compatible
 with a strict single operational device guarantee. The fixed single-device rule therefore requires waiting; it is not reopened
-here. Owner selects lease duration/revocation tolerance, which determines the
-maximum wait. No hidden force-transfer override is permitted.
+here. Owner chose 24 hours for the maximum lease, so strict transfer may wait through the remainder of a previously issued lease (up to 24 hours). No hidden force-transfer override is permitted.
 
 Tokens are memory-only access + AES-GCM-encrypted refresh under Keystore key,
 private noBackupFilesDir, fresh IV and AAD binding identity/version. Lease and time
@@ -227,8 +228,7 @@ Record redacted revision/digest, test IDs and artifacts. No production probe can
 substitute for concurrent/restart/crypto tests.
 
 Only genuinely open policy decisions:
-1. Offline lease maximum L and acceptable revocation delay R; operational impact
-   of strict wait through old lease expiry on lost-device recovery.
+1. **CLOSED — Offline lease 24h** and matching worst-case offline revocation/strict transfer wait. **OPEN —** whether trusted offline eligibility can persist after Android device reboot without online revalidation; any such method requires security acceptance.
 2. Access/retention on old device after logout/transfer/security suspension (expiry
    read-only itself is already settled). Proposed safer default: lock until same
    identity reauthenticates; do not delete records.
