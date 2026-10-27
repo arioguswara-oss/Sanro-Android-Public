@@ -9,6 +9,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.WindowInsets;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.InputType;
@@ -37,6 +38,7 @@ public final class MainActivity extends Activity {
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         LinearLayout root = column();
+        applySafeArea(root);
         TextView heading = text("SANRO POS • Free", 26);
         root.addView(heading);
         status = text("Aktivasi POS2 belum tersedia. Operasi tenant terkunci.", 15);
@@ -68,6 +70,33 @@ public final class MainActivity extends Activity {
         show("Data disimpan offline pada perangkat ini.");
         refresh();
     }
+    // Android 15+ may draw our content under system bars. Preserve the layout's
+    // original padding and account for real status/navigation/cutout insets.
+    private void applySafeArea(LinearLayout root) {
+        final int left = root.getPaddingLeft();
+        final int top = root.getPaddingTop();
+        final int right = root.getPaddingRight();
+        final int bottom = root.getPaddingBottom();
+        root.setOnApplyWindowInsetsListener((view, insets) -> {
+            int insetLeft, insetTop, insetRight, insetBottom;
+            if (Build.VERSION.SDK_INT >= 30) {
+                android.graphics.Insets safe = insets.getInsets(
+                    WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
+                insetLeft = safe.left;
+                insetTop = safe.top;
+                insetRight = safe.right;
+                insetBottom = safe.bottom;
+            } else {
+                insetLeft = insets.getSystemWindowInsetLeft();
+                insetTop = insets.getSystemWindowInsetTop();
+                insetRight = insets.getSystemWindowInsetRight();
+                insetBottom = insets.getSystemWindowInsetBottom();
+            }
+            view.setPadding(left + insetLeft, top + insetTop,
+                right + insetRight, bottom + insetBottom);
+            return insets;
+        });
+    }
     private LinearLayout column() {
         LinearLayout view = new LinearLayout(this); view.setOrientation(LinearLayout.VERTICAL);
         int p = (int)(12 * getResources().getDisplayMetrics().density);
@@ -79,6 +108,12 @@ public final class MainActivity extends Activity {
     private void addButton(LinearLayout parent, String label, Runnable action) {
         Button button = new Button(this); button.setText(label); parent.addView(button);
         button.setOnClickListener(v -> action.run());
+    }
+    // Abbreviate only in the list; keep complete immutable receipt IDs in
+    // history/detail, stored sale records and printed receipts.
+    private String historyReference(String value) {
+        if (value == null) return "";
+        return value.length() > 19 ? value.substring(0, 19) + "…" : value;
     }
     private String money(long value) { return "Rp " + String.format(Locale.forLanguageTag("id-ID"), "%,d", value); }
     private void show(String message) { runOnUiThread(() -> { if (!isDestroyed()) status.setText(message); }); }
@@ -112,7 +147,7 @@ public final class MainActivity extends Activity {
         } else if (screen.equals("Riwayat")) {
             content.addView(text("Riwayat transaksi cash", 22));
             if (sales.isEmpty()) content.addView(text("Belum ada transaksi.", 16));
-            for (Sale sale : sales) addButton(content, new java.text.SimpleDateFormat("dd/MM HH:mm", Locale.ROOT).format(new Date(sale.createdAt)) + " • " + money(sale.total) + "\n" + sale.receiptNo, () -> detail(sale));
+            for (Sale sale : sales) addButton(content, new java.text.SimpleDateFormat("dd/MM HH:mm", Locale.ROOT).format(new Date(sale.createdAt)) + " • " + money(sale.total) + "\nNo. uji: " + historyReference(sale.receiptNo), () -> detail(sale));
         } else if (screen.equals("Printer")) {
             content.addView(text("Printer tersimpan: " + (selectedPrinter == null ? "belum dipilih" : selectedPrinter), 18));
             addButton(content, "Pilih printer Bluetooth paired", this::choosePrinter);
