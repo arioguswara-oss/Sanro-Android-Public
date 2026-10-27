@@ -11,8 +11,8 @@ android {
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
     buildTypes {
-        debug { applicationIdSuffix '.mvpdebug' }
-        release { minifyEnabled false }
+        debug { applicationIdSuffix '.uifixdebug'; manifestPlaceholders = [appLabel: 'SANRO POS UI TEST'] }
+        release { minifyEnabled false; manifestPlaceholders = [appLabel: 'SANRO POS'] }
     }
     testOptions { unitTests.includeAndroidResources = true }
     buildFeatures { buildConfig true }
