@@ -1,0 +1,63 @@
+{
+  "backend_development_commit": "1e17f3267b94a22c5574abc06d712e4e2d62f429",
+  "backend_main_commit": "61e95928340bc5879759ec43ad96a971797117f3",
+  "android_commit": "c705ed39f4d4d28c6093dbf81de88981be1c788d",
+  "deployment_revision": "UNVERIFIED",
+  "files": [
+    {
+      "path": "v2-login-register/lib/pos-login-service.js",
+      "development_sha256": "7d3a8e2b326f95e88f32541d05908b0dbe98b09555b8f8b0b5b5497c6d408834",
+      "main_git_blob": "b4193bcb55b5aa249361c80305428b84bc9e06f6"
+    },
+    {
+      "path": "v2-login-register/lib/mysql-session-store.js",
+      "development_sha256": "bddc4d7b0ee4be03cc1d708a0b6f135218ebfd75ef89756b914db5225cdf9aeb",
+      "main_git_blob": "08a89244309493bf6ea254548cc3e9f003568757"
+    },
+    {
+      "path": "v2-login-register/sql/004_pos_v2_sessions.sql",
+      "development_sha256": "3cec81c1a50016a8d57ca069ba87784af6de2f94aadf42da4b3a9f873f189a00",
+      "main_git_blob": "19016aec857bc7f5c9a6df765fc6b324b94f24dd"
+    },
+    {
+      "path": "v2-login-register/lib/pos-free-activation-service.js",
+      "development_sha256": "b1c4ec27be716c99ba1983bac9c8278bf7aaa584186369e1a809db1295b5ec2e",
+      "main_git_blob": "727d3ef05e80f0f56bf71c39efd5015f0077dca5"
+    },
+    {
+      "path": "v2-login-register/lib/pos-operational-access-gate.js",
+      "development_sha256": "acd9b981737160b1ef40fc43ab1fbdd8327bd032ddc2140cad5337003c590f08",
+      "main_git_blob": "d144e9670318ee61c1965e3d35f246786e6ee491"
+    },
+    {
+      "path": "v2-login-register/lib/access-context-client.js",
+      "development_sha256": "77547a28b3291dd6af71b702274e5a8e0ae5723dfd5d153ac33d32e84626ca24",
+      "main_git_blob": "ce6b9bba70c50a2a48d811e67d526181ee18e179"
+    },
+    {
+      "path": "v2-login-register/runtime/web-server.js",
+      "development_sha256": "caa45e69c54c9fcc862b3a836deea665ba563855bcc61d60e754cf8a2032bf1c",
+      "main_git_blob": null
+    },
+    {
+      "path": "v2-login-register/runtime/api-server.js",
+      "development_sha256": "103ca382dde90f92bfd9f64676d8821e438cf349cced1151fe61ba297f57f0cc",
+      "main_git_blob": null
+    },
+    {
+      "path": "v2-login-register/runtime/persistent-services.js",
+      "development_sha256": "7aacc1f82b02b4bffc672ef72699986ee96129dc7d6061883ec1b6abc8e40769",
+      "main_git_blob": null
+    },
+    {
+      "path": "v2-login-register/http/login-handlers.js",
+      "development_sha256": "94b5734b580cec1c34bab6e513dc59de802b00d309a08e71fa6073cb711d1d16",
+      "main_git_blob": "8d34c5efbc1fd7f06209227d5afbb01cf4844f55"
+    },
+    {
+      "path": "operational-public/authenticated-web-host.js",
+      "development_sha256": "4fb7569a767ed342d8fd30e95ac0689a36a924552f9345f37359b7e7faa86a56",
+      "main_git_blob": null
+    }
+  ]
+}

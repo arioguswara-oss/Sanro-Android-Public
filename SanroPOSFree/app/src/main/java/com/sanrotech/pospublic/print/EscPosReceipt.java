@@ -9,8 +9,21 @@ public final class EscPosReceipt {
 
     public static byte[] testReceipt(String reference, String product, int qty, long price,
                                      long total, long paid, boolean cut) {
-        if (qty <= 0 || price < 0 || total < 0 || paid < total)
+        com.sanrotech.pospublic.data.SaleLine item = new com.sanrotech.pospublic.data.SaleLine("", "", "", qty, price);
+        item.productName = product;
+        return saleReceipt(reference, java.util.Collections.singletonList(item), total, paid, cut);
+    }
+
+    public static byte[] saleReceipt(String reference, java.util.List<com.sanrotech.pospublic.data.SaleLine> items,
+                                     long total, long paid, boolean cut) {
+        if (items == null || items.isEmpty() || items.size() > 50 || total < 0 || paid < total)
             throw new IllegalArgumentException("Data nota tidak valid");
+        long sum = 0;
+        for (com.sanrotech.pospublic.data.SaleLine item : items) {
+            if (item.qty <= 0 || item.unitPrice < 0) throw new IllegalArgumentException("Baris nota tidak valid");
+            sum = Math.addExact(sum, Math.multiplyExact(item.qty, item.unitPrice));
+        }
+        if (sum != total) throw new IllegalArgumentException("Total nota tidak sesuai");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         bytes(out, 0x1B, 0x40);             // ESC @ initialize
         bytes(out, 0x1B, 0x74, 0x00);       // CP437, ASCII-safe
@@ -20,8 +33,11 @@ public final class EscPosReceipt {
         bytes(out, 0x1B, 0x61, 0x00);
         line(out, "No: " + clean(reference));
         line(out, "----------------------------------------");
-        line(out, clean(product));
-        line(out, qty + " x Rp " + price + " = Rp " + total);
+        for (com.sanrotech.pospublic.data.SaleLine item : items) {
+            String name = clean(item.productName);
+            for (int i = 0; i < name.length(); i += 40) line(out, name.substring(i, Math.min(i + 40, name.length())));
+            line(out, item.qty + " x Rp " + item.unitPrice + " = Rp " + Math.multiplyExact(item.qty, item.unitPrice));
+        }
         line(out, "----------------------------------------");
         line(out, "TOTAL       Rp " + total);
         line(out, "BAYAR       Rp " + paid);
