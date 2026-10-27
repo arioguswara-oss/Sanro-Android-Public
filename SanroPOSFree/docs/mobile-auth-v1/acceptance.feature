@@ -186,6 +186,32 @@ Feature: Native Free activation and local operational authority
     And offline logout never claims server revocation succeeded
     And retained local data is not erased or exposed to an unauthenticated installation
 
+  Scenario: Logout locks retained local history even with remaining offline lease
+    Given an authenticated tenant-bound K1 installation has committed local sales and a valid unexpired 24-hour lease
+    When the authorized user logs out while the phone is offline
+    Then the installation immediately locks all local product, stock, sale history, report, export, receipt and reprint access
+    And checkout and all Room operational writes are forbidden
+    And Room records are retained without deletion
+    And the UI never claims offline logout has revoked the remote lease instantly
+    When the same identity later reauthenticates online on K1
+    Then local data access can return only if K1 is still the server-authorized tenant device and role
+
+  Scenario: Transferred old device cannot reopen historical data
+    Given K1 previously held the tenant operational slot and has retained Room history
+    When confirmed recovery transfers the operational slot to K2 after outstanding K1 lease expiry
+    Then K1 cannot read, export, display or reprint its retained local data
+    And K1 reauthentication without a fresh valid device authorization does not bypass the lock
+    And the old local database is not erased
+
+  Scenario: Security suspension denies local historical reads separately from subscription expiry
+    Given K1 has local history, a cached credential and an unexpired lease
+    When K1 receives authoritative account, tenant, product or device security suspension
+    Then local history, export, reprint and operational writes lock immediately
+    And K1 does not reinterpret security suspension as READ_ONLY subscription expiry
+    And data remains stored for a future separately authorized recovery
+    When a validly authenticated, still-authorized K1 user has subscription expiry without security suspension
+    Then historical read/export follows role-filtered READ_ONLY policy and new writes remain denied
+
   Scenario: Lost device authorization is not SQLite restoration
     When a device is reinstalled or replaced and its Keystore key is lost
     Then copied ciphertext or lease does not authenticate the replacement
