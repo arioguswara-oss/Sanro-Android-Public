@@ -1,0 +1,50 @@
+name: SANRO POS Public Android - Debug Prototype
+on:
+  push:
+    branches:
+      - feature/pos-free-local-first-v0
+    paths:
+      - 'SanroPOSFree/**'
+      - '.github/workflows/sanro-pos-public-android-debug.yml'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'SanroPOSFree/**'
+      - '.github/workflows/sanro-pos-public-android-debug.yml'
+
+permissions:
+  contents: read
+jobs:
+  android-debug:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: SanroPOSFree
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Android SDK 35
+        run: |
+          SDKMANAGER=$(find "$ANDROID_HOME/cmdline-tools" -maxdepth 3 -type f -name sdkmanager | head -n 1)
+          test -n "$SDKMANAGER" || { echo 'sdkmanager unavailable'; exit 1; }
+          "$SDKMANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Unit tests
+        run: gradle :app:testDebugUnitTest --no-daemon
+      - name: Android lint
+        run: gradle :app:lintDebug --no-daemon
+      - name: Build debug APK
+        run: gradle :app:assembleDebug --no-daemon
+      - name: Upload APK prototype artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanro-pos-public-free-debug-PROTOTYPE
+          path: SanroPOSFree/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
