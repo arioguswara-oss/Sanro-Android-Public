@@ -152,7 +152,7 @@ reply (conservative reservation is safe after lost response).
 
 ## Owner-approved offline lease — LOCKED 2026-10-28
 
-**Decision #001 / Option A: maximum signed offline write lease = 24 hours.** The issued lease expires at the earlier of `server_now + 24 hours` and the authoritative entitlement end. A device may operate offline only within a valid, verified lease and authorized state. Reconnection may renew it after server validation; an outage never extends it. Once expired, block new writes without deleting Room history, consistent with the approved read-only-after-expiry rule. Device transfer is strict: the replacement cannot write until the maximum outstanding lease on the old device has expired, potentially up to 24 hours. Immediate revocation of an unreachable offline device cannot be guaranteed. This establishes a maximum offline revocation delay of up to 24 hours for a newly issued lease, **not** a promise of instant remote revocation. The reboot/trusted-time proof behavior remains an OPEN implementation/product decision. No online authentication, server adapter, offline lease issuer, production activation or data migration is approved by selecting this duration.
+**Decision #001 / Option A: maximum signed offline write lease = 24 hours.** The issued lease expires at the earlier of `server_now + 24 hours` and the authoritative entitlement end. A device may operate offline only within a valid, verified lease and authorized state. Reconnection may renew it after server validation; an outage never extends it. Once expired, block new writes without deleting Room history, consistent with the approved read-only-after-expiry rule. Device transfer is strict: the replacement cannot write until the maximum outstanding lease on the old device has expired, potentially up to 24 hours. Immediate revocation of an unreachable offline device cannot be guaranteed. This establishes a maximum offline revocation delay of up to 24 hours for a newly issued lease, **not** a promise of instant remote revocation. **Owner Decision #002 (2026-10-28): after any Android device reboot or missing trusted boot anchor, online server revalidation is REQUIRED before new operational writes, even when the prior lease has remaining time.** No online authentication, server adapter, offline lease issuer, production activation or data migration is approved by selecting this duration.
 
 ## Single device, offline time and recovery
 
@@ -165,9 +165,7 @@ to old sessions. Existing browser recovery cannot release that mobile slot.
 
 Owner LOCKED maximum lease duration **L = 24 hours**, with up to **24 hours** of delayed offline revocation while a previously issued lease remains valid. **No offline write lease may be issued until the backend issuer, signing/verification, device binding, and entitlement gates have passed staging/Owner approval.** When implemented, `exp = min(server_now + 24 hours, authoritative_entitlement_end)`; outages do not extend it.
 Unknown network state does not erase a previously verified lease; known revocation
-locks immediately. Offline revocation cannot be instantaneous. Phone reboot or
-loss of trusted time anchor requires online revalidation for writes (conservative
-proposal); force-close in the same boot can restore an intact binding/lease.
+locks immediately. Offline revocation cannot be instantaneous. **LOCKED #002:** phone reboot or loss of trusted time anchor requires successful online server revalidation for writes, with account, device, tenant and entitlement checks; prior unexpired lease alone never reopens writes after reboot. Force-close/reopen in the same boot can restore an intact binding/lease within its original deadline. Offline history remains locally stored; access follows separately approved historical rights.
 
 Within a boot, deadline uses trusted server time + elapsedRealtime, not wall time.
 Persist boot identity, monotonic anchor, minimum accepted epoch/revision and signed
@@ -228,7 +226,7 @@ Record redacted revision/digest, test IDs and artifacts. No production probe can
 substitute for concurrent/restart/crypto tests.
 
 Only genuinely open policy decisions:
-1. **CLOSED — Offline lease 24h** and matching worst-case offline revocation/strict transfer wait. **OPEN —** whether trusted offline eligibility can persist after Android device reboot without online revalidation; any such method requires security acceptance.
+1. **CLOSED — #001** Offline lease max 24 hours and matching worst-case offline revocation/strict transfer wait. **CLOSED — #002** Device reboot/missing trusted boot anchor requires successful online validation before new operational writes, regardless of remaining previous lease. No offline reboot grace.
 2. Access/retention on old device after logout/transfer/security suspension (expiry
    read-only itself is already settled). Proposed safer default: lock until same
    identity reauthenticates; do not delete records.
