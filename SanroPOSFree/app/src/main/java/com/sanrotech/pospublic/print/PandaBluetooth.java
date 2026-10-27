@@ -1,5 +1,6 @@
 package com.sanrotech.pospublic.print;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -11,7 +12,7 @@ public final class PandaBluetooth {
     private PandaBluetooth() {}
 
     // Call on a worker thread, after checking BLUETOOTH_CONNECT permissions.
-    @SuppressWarnings("MissingPermission")
+    @SuppressLint("MissingPermission")
     public static void sendPairedPrinter(String mac, byte[] receipt) throws Exception {
         if (receipt == null || receipt.length == 0) throw new IllegalArgumentException("Nota kosong");
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();

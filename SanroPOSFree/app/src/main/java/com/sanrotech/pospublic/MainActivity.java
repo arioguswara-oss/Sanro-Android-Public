@@ -1,6 +1,7 @@
 package com.sanrotech.pospublic;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -104,7 +105,7 @@ public final class MainActivity extends Activity {
         }
         return true;
     }
-    @SuppressWarnings("MissingPermission")
+    @SuppressLint("MissingPermission")
     private void choosePrinter() {
         if (!allowBluetooth()) return;
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
