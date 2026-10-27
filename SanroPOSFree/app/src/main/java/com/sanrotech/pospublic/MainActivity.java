@@ -43,14 +43,30 @@ public final class MainActivity extends Activity {
         root.addView(heading);
         status = text("Aktivasi POS2 belum tersedia. Operasi tenant terkunci.", 15);
         root.addView(status);
+        root.addView(text("Login native dan aktivasi tenant belum tersedia. Kontrak akun, perangkat, dan izin operasional masih menunggu verifikasi.", 18));
+        Button login = new Button(this);
+        login.setText("Masuk POS2 • belum tersedia");
+        login.setEnabled(false);
+        root.addView(login);
+        Button recovery = new Button(this);
+        recovery.setText("Pulihkan sesi perangkat • belum tersedia");
+        recovery.setEnabled(false);
+        root.addView(recovery);
+        if (BuildConfig.DEBUG) {
+            addButton(root, "Buka sandbox lokal • bukan akun toko", this::openDebugSandbox);
+        }
+        setContentView(root);
+    }
+    private void openDebugSandbox() {
+        if (!BuildConfig.DEBUG || db != null) return;
+        LinearLayout root = column();
+        applySafeArea(root);
+        root.addView(text("SANRO POS • Free", 26));
+        status = text("SANDBOX DEBUG • bukan sesi POS2", 15);
+        root.addView(status);
         content = column();
         ScrollView scroll = new ScrollView(this);
         scroll.addView(content);
-        if (!BuildConfig.DEBUG) {
-            root.addView(text("Masuk / aktivasi memerlukan kontrak POS2 dan kebijakan offline yang terverifikasi. Hubungi pengelola.", 18));
-            setContentView(root);
-            return;
-        }
         // No debug tenant or operational database is selected in release.
         tenant = "_DEBUG_LOCAL_ONLY_";
         db = LocalDatabase.open(this);
