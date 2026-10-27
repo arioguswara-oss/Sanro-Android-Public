@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-feature android:name="android.hardware.bluetooth" android:required="false" />
     <application android:allowBackup="false" android:usesCleartextTraffic="false"
-        android:label="SANRO POS" android:theme="@android:style/Theme.Material.Light.NoActionBar">
+        android:label="SANRO POS" android:icon="@drawable/sanro_pos_logo" android:theme="@android:style/Theme.Material.Light.NoActionBar">
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
