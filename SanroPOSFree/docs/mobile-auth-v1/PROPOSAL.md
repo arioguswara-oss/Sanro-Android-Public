@@ -150,6 +150,17 @@ unknown/retired kid; old key verification retained for outstanding lease duratio
 Signing/DB failure issues no unrecorded lease; max lease expiry recorded before
 reply (conservative reservation is safe after lost response).
 
+## Owner-approved old-device data access — LOCKED 2026-10-28
+
+**Owner Decision #003 / Option A:** local SQLite/Room records must remain stored, but application access to the old device's products, stock, sales history, reports, exports, receipt details and reprints is **locked immediately** after local logout, completed operational-device transfer, or security suspension. A previously valid offline lease or cached session must not bypass this local access lock. All authorized repository reads and writes must use the gate (not merely hide navigation buttons). Do not delete Room records on logout, transfer or suspension.
+
+- After normal logout, the same identity may access existing records again only after valid reauthentication and renewed authorization for the **same permitted device and tenant**; do not infer authority from retained database or refresh material.
+- Once a tenant operational slot is transferred to a different device, the old device must not regain local-history access automatically. Reauthentication alone must not override a device binding that has been transferred.
+- Security suspension keeps data inaccessible pending authoritative clearance and valid reauthentication; never reinterpret suspension as subscription expiry.
+- **Separate existing rule remains:** an authenticated, currently authorized user whose trial/paid subscription expires may view/export local history in READ_ONLY within existing role/history privileges. Expired entitlement never grants writes.
+- Online logout revokes server credentials per the specified protocol; an **offline local logout locks this installation immediately** and queues or requires later server revocation. Because previously issued offline rights may exist on an unreachable device, a server-side transfer still waits through the last outstanding lease (up to 24h), never assumes immediate remote revocation.
+- Secure-at-rest protections and data migration/restore require separate implementation acceptance; current debug Room SQLite should not be represented as encrypted merely because its UI is locked. No changes to database schema or deletion policy are authorized by this specification.
+
 ## Owner-approved offline lease — LOCKED 2026-10-28
 
 **Decision #001 / Option A: maximum signed offline write lease = 24 hours.** The issued lease expires at the earlier of `server_now + 24 hours` and the authoritative entitlement end. A device may operate offline only within a valid, verified lease and authorized state. Reconnection may renew it after server validation; an outage never extends it. Once expired, block new writes without deleting Room history, consistent with the approved read-only-after-expiry rule. Device transfer is strict: the replacement cannot write until the maximum outstanding lease on the old device has expired, potentially up to 24 hours. Immediate revocation of an unreachable offline device cannot be guaranteed. This establishes a maximum offline revocation delay of up to 24 hours for a newly issued lease, **not** a promise of instant remote revocation. **Owner Decision #002 (2026-10-28): after any Android device reboot or missing trusted boot anchor, online server revalidation is REQUIRED before new operational writes, even when the prior lease has remaining time.** No online authentication, server adapter, offline lease issuer, production activation or data migration is approved by selecting this duration.
@@ -227,9 +238,7 @@ substitute for concurrent/restart/crypto tests.
 
 Only genuinely open policy decisions:
 1. **CLOSED — #001** Offline lease max 24 hours and matching worst-case offline revocation/strict transfer wait. **CLOSED — #002** Device reboot/missing trusted boot anchor requires successful online validation before new operational writes, regardless of remaining previous lease. No offline reboot grace.
-2. Access/retention on old device after logout/transfer/security suspension (expiry
-   read-only itself is already settled). Proposed safer default: lock until same
-   identity reauthenticates; do not delete records.
+2. **CLOSED — #003** Logout, completed device transfer, or security suspension immediately lock all local data access on the old device, without deleting Room records. Same-device reauthentication may reopen access only while authorization and device binding remain valid; transferred/suspended devices remain blocked. Valid authorized subscription expiry remains READ_ONLY.
 3. Dedicated staging environment and fixture account authorization.
 4. Owner approval to implement backend adapter in a separate code PR. This docs
    PR approves neither backend coding nor deployment.
@@ -270,8 +279,4 @@ activation data-repair gap, not a generated code. If control plane encodes expir
 as product inactive, require an authoritative reason distinguishing expiry from
 suspension before allowing read-only login; never reinterpret a security denial.
 
-Offline expiry preserves historical read access on the previously authenticated
-bound device within its last validated role privileges. Lease exp ends write
-rights; it never changes retained history into a write grant. New/unauthenticated
-installations cannot use an expired lease to authenticate. Separate logout,
-transfer and security-suspension history policy remains pending Owner decision.
+Subscription/lease expiry retains READ_ONLY historical access only for a currently authenticated, still-authorized account and bound device within last validated role/history privileges; it grants no writes. **LOCKED #003:** logout, completed transfer, or security suspension immediately lock old-device local reads/exports/reprints as well as writes; data remains stored. Same-device reauthentication may restore access only while authorization and device binding remain valid. An old installation cannot use a retained lease to bypass a transferred/suspended binding. New or unauthenticated installations cannot use an expired lease to authenticate.
