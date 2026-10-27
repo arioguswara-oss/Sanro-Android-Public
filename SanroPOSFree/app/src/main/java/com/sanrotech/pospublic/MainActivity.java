@@ -81,8 +81,9 @@ public final class MainActivity extends Activity {
         button.setOnClickListener(v -> action.run());
     }
     private String money(long value) { return "Rp " + String.format(Locale.forLanguageTag("id-ID"), "%,d", value); }
-    private void show(String message) { runOnUiThread(() -> status.setText(message)); }
+    private void show(String message) { runOnUiThread(() -> { if (!isDestroyed()) status.setText(message); }); }
     private void runDb(Runnable action) {
+        if (worker.isShutdown()) return;
         worker.execute(() -> { try { action.run(); } catch (Exception ex) { show("Gagal: " + ex.getMessage()); } });
     }
     private void rotateRequest() {
@@ -211,7 +212,7 @@ public final class MainActivity extends Activity {
                 try {
                     Sale sale=db.ledger().checkout(tenant,key,tender,System.currentTimeMillis());
                     show("Transaksi tersimpan. Kembalian " + money(sale.paid-sale.total));
-                    runOnUiThread(() -> { dialog.dismiss(); screen="Riwayat"; refresh(); detail(sale); });
+                    runOnUiThread(() -> { if (isDestroyed()) return; dialog.dismiss(); screen="Riwayat"; refresh(); detail(sale); });
                 } catch(Exception ex) {
                     show("Gagal menyimpan: " + ex.getMessage());
                     runOnUiThread(() -> { dialog.setCancelable(true); dialog.getButton(-1).setEnabled(true); dialog.getButton(-2).setEnabled(true); });
