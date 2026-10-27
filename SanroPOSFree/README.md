@@ -1,3 +1,5 @@
+Current implementation: [local Free MVP stage 1](docs/FUNCTIONAL_MVP_V1.md), sandbox debug pending CI and Owner UAT.
+
 # SANRO POS Public Android — FREE Local-First V0 (Owner baseline)
 Date: 2026-10-27
 Status: SCOPE LOCKED / IMPLEMENTATION NOT YET QA PASSED

@@ -10,6 +10,8 @@ public class SaleLine {
     @PrimaryKey @NonNull public String id;
     @NonNull public String saleId;
     @NonNull public String productId;
+    @androidx.room.ColumnInfo(defaultValue = "''")
+    @NonNull public String productName = "";
     public int qty;
     public long unitPrice;
 

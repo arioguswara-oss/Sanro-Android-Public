@@ -1,8 +1,9 @@
-name: SANRO POS Public Android - Debug Prototype
+name: SANRO POS Public Android - Local Free MVP Debug
 on:
   push:
     branches:
       - feature/pos-free-local-first-v0
+      - feature/pos-free-functional-mvp-v1
     paths:
       - 'SanroPOSFree/**'
       - '.github/workflows/sanro-pos-public-android-debug.yml'
@@ -41,6 +42,15 @@ jobs:
         run: gradle :app:lintDebug --no-daemon
       - name: Build debug APK
         run: gradle :app:assembleDebug --no-daemon
+      - name: Upload verification reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanro-pos-public-test-lint-reports
+          path: |
+            SanroPOSFree/app/build/reports/tests/
+            SanroPOSFree/app/build/reports/lint-results-debug.*
+          if-no-files-found: warn
       - name: Upload APK prototype artifact
         uses: actions/upload-artifact@v4
         with:
