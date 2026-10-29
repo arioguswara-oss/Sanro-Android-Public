@@ -28,8 +28,8 @@ public class ActivationGateTest {
             assertNull(name, field.get(activity));
         }
         View root = activity.getWindow().getDecorView();
-        assertFalse(button(root, "Masuk POS2 • belum tersedia").isEnabled());
-        assertFalse(button(root, "Pulihkan sesi perangkat • belum tersedia").isEnabled());
+        assertTrue(button(root, "Masuk POS2").isEnabled());
+        assertTrue(button(root, "Pulihkan perangkat").isEnabled());
         assertNull(button(root, "Bayar cash"));
     }
     private Button button(View view, String label) {

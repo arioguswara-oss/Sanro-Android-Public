@@ -16,6 +16,8 @@ import android.text.InputType;
 import android.widget.*;
 import com.sanrotech.pospublic.data.*;
 import com.sanrotech.pospublic.print.*;
+import com.sanrotech.pospublic.auth.AuthorizationPolicy;
+import com.sanrotech.pospublic.data.AuthorizedPosRepository;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -28,6 +30,8 @@ public final class MainActivity extends Activity {
     private LinearLayout content;
     private String selectedPrinter;
     private LocalDatabase db;
+    private AuthorizedPosRepository repository;
+    private AuthorizationPolicy authorization;
     private String tenant;
     private String screen = "Kasir";
     private List<Product> products = new ArrayList<>();
@@ -41,17 +45,11 @@ public final class MainActivity extends Activity {
         applySafeArea(root);
         TextView heading = text("SANRO POS • Free", 26);
         root.addView(heading);
-        status = text("Aktivasi POS2 belum tersedia. Operasi tenant terkunci.", 15);
+        status = text("Login native • tenant belum terhubung. Kasir terkunci.", 15);
         root.addView(status);
-        root.addView(text("Login native dan aktivasi tenant belum tersedia. Kontrak akun, perangkat, dan izin operasional masih menunggu verifikasi.", 18));
-        Button login = new Button(this);
-        login.setText("Masuk POS2 • belum tersedia");
-        login.setEnabled(false);
-        root.addView(login);
-        Button recovery = new Button(this);
-        recovery.setText("Pulihkan sesi perangkat • belum tersedia");
-        recovery.setEnabled(false);
-        root.addView(recovery);
+        root.addView(text("Masuk menggunakan akun POS2. Aktivasi memerlukan HTTPS staging dan authority resmi.", 18));
+        addButton(root, "Masuk POS2", () -> showLogin(root));
+        addButton(root, "Pulihkan perangkat", () -> showRecovery(root));
         if (BuildConfig.DEBUG) {
             addButton(root, "Buka sandbox lokal • bukan akun toko", this::openDebugSandbox);
         }
@@ -70,6 +68,8 @@ public final class MainActivity extends Activity {
         // No debug tenant or operational database is selected in release.
         tenant = "_DEBUG_LOCAL_ONLY_";
         db = LocalDatabase.open(this);
+        authorization = new AuthorizationPolicy(true, "DEBUG_SANDBOX");
+        repository = new AuthorizedPosRepository(db, authorization);
         requestId = getPreferences(MODE_PRIVATE).getString("checkout_request", null);
         if (requestId == null) rotateRequest();
         selectedPrinter = getPreferences(MODE_PRIVATE).getString("printer_mac", null);
@@ -85,6 +85,25 @@ public final class MainActivity extends Activity {
         setContentView(root);
         show("Data disimpan offline pada perangkat ini.");
         refresh();
+    }
+    private void showLogin(LinearLayout root) {
+        root.removeAllViews(); applySafeArea(root);
+        root.addView(text("Masuk POS2", 26));
+        field(root, "Email", "", false);
+        EditText password = field(root, "Kata sandi", "", false);
+        password.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        addButton(root, "Verifikasi akun", () -> {
+            password.setText("");
+            root.addView(text("HTTPS staging resmi belum tersedia. Tidak ada sesi atau tenant yang diaktifkan.", 16));
+        });
+        addButton(root, "Kembali", () -> onCreate(null));
+        root.addView(text("Kredensial tidak dikirim atau disimpan pada build ini.", 14));
+    }
+    private void showRecovery(LinearLayout root) {
+        root.removeAllViews(); applySafeArea(root);
+        root.addView(text("Pemulihan perangkat", 26));
+        root.addView(text("Pemulihan membutuhkan HTTPS staging resmi dan konfirmasi otoritas. Data lokal tetap terkunci.", 16));
+        addButton(root, "Kembali", () -> onCreate(null));
     }
     // Android 15+ may draw our content under system bars. Preserve the layout's
     // original padding and account for real status/navigation/cutout insets.
@@ -145,9 +164,9 @@ public final class MainActivity extends Activity {
     private void refresh() {
         if (db == null) return;
         runDb(() -> {
-            List<Product> p = db.ledger().products(tenant);
-            List<CartItem> c = db.ledger().cart(tenant);
-            List<Sale> h = db.ledger().sales(tenant);
+            List<Product> p = repository.products(tenant);
+            List<CartItem> c = repository.cart(tenant);
+            List<Sale> h = repository.sales(tenant);
             runOnUiThread(() -> { if (isDestroyed()) return; products=p; cart=c; sales=h; render(); });
         });
     }
@@ -206,11 +225,10 @@ public final class MainActivity extends Activity {
         rotateRequest();
         runDb(() -> {
             int qty = delta;
-            for (CartItem c : db.ledger().cart(tenant)) if (c.productId.equals(id)) qty += c.qty;
-            Product p = db.ledger().product(tenant, id);
+            for (CartItem c : repository.cart(tenant)) if (c.productId.equals(id)) qty += c.qty;
+            Product p = repository.product(tenant, id);
             if (qty > 1000 || p == null || qty > p.stockQty) throw new IllegalArgumentException("Jumlah melebihi stok/batas 1000");
-            if (qty <= 0) db.ledger().removeCart(tenant, id);
-            else db.ledger().putCart(new CartItem(tenant, id, qty));
+            repository.changeCart(tenant, id, qty);
             refresh();
         });
     }
@@ -233,7 +251,7 @@ public final class MainActivity extends Activity {
                 Product value = new Product(p==null?UUID.randomUUID().toString():p.id,tenant,
                     sku.getText().toString().trim(),name.getText().toString().trim(),
                     Long.parseLong(price.getText().toString()), Long.parseLong(stock.getText().toString()));
-                runDb(() -> { db.ledger().saveProduct(value,p!=null); show("Barang tersimpan."); refresh(); runOnUiThread(dialog::dismiss); });
+                runDb(() -> { repository.saveProduct(value,p!=null); show("Barang tersimpan."); refresh(); runOnUiThread(dialog::dismiss); });
             } catch (NumberFormatException ex) { show("Harga dan stok harus berupa angka bulat yang valid."); }
         })); dialog.show();
     }
@@ -261,7 +279,7 @@ public final class MainActivity extends Activity {
             dialog.setCancelable(false); dialog.getButton(-1).setEnabled(false); dialog.getButton(-2).setEnabled(false);
             worker.execute(() -> {
                 try {
-                    Sale sale=db.ledger().checkout(tenant,key,tender,System.currentTimeMillis());
+                    Sale sale=repository.checkout(tenant,key,tender,System.currentTimeMillis());
                     show("Transaksi tersimpan. Kembalian " + money(sale.paid-sale.total));
                     runOnUiThread(() -> { if (isDestroyed()) return; dialog.dismiss(); screen="Riwayat"; refresh(); detail(sale); });
                 } catch(Exception ex) {
@@ -273,7 +291,7 @@ public final class MainActivity extends Activity {
     }
     private void detail(Sale sale) {
         runDb(() -> {
-            List<SaleLine> lines=db.ledger().saleLines(sale.id);
+            List<SaleLine> lines=repository.saleLines(tenant,sale.id);
             StringBuilder body=new StringBuilder(sale.receiptNo).append("\n");
             for(SaleLine l:lines) body.append(l.productName).append(" × ").append(l.qty).append(" • ").append(money(l.unitPrice*l.qty)).append("\n");
             body.append("Total ").append(money(sale.total)).append("\nCash ").append(money(sale.paid)).append("\nKembalian ").append(money(sale.paid-sale.total));
@@ -318,9 +336,9 @@ public final class MainActivity extends Activity {
         String mac=selectedPrinter;
         worker.execute(() -> {
             try {
-                Sale sale=db.ledger().sale(tenant,id);
+                Sale sale=repository.sale(tenant,id);
                 if(sale==null) throw new IllegalStateException("Nota tidak ditemukan");
-                List<SaleLine> lines=db.ledger().saleLines(id);
+                List<SaleLine> lines=repository.saleLines(tenant,id);
                 byte[] bytes=EscPosReceipt.saleReceipt(sale.receiptNo,lines,sale.total,sale.paid,true);
                 show("Mengirim nota Bluetooth; jangan tekan ulang.");
                 PandaBluetooth.sendPairedPrinter(mac,bytes);
