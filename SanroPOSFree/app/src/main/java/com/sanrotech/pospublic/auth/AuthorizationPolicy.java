@@ -9,7 +9,12 @@ public final class AuthorizationPolicy {
     private final boolean sandbox;
     private final String currentBootId;
 
-    public AuthorizationPolicy(boolean sandbox, String currentBootId) {
+    public AuthorizationPolicy(String currentBootId) { this.sandbox = false; this.currentBootId = currentBootId; }
+    public static AuthorizationPolicy debugSandbox(String currentBootId) {
+        if (!com.sanrotech.pospublic.BuildConfig.DEBUG) throw new SecurityException("Debug sandbox unavailable in release");
+        return new AuthorizationPolicy(true, currentBootId);
+    }
+    private AuthorizationPolicy(boolean sandbox, String currentBootId) {
         this.sandbox = sandbox; this.currentBootId = currentBootId;
     }
     synchronized void installVerifiedGrant(AuthGrant verifiedGrant) { grant = verifiedGrant; }

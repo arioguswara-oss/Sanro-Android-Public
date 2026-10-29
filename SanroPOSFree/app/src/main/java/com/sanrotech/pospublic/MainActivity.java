@@ -68,7 +68,7 @@ public final class MainActivity extends Activity {
         // No debug tenant or operational database is selected in release.
         tenant = "_DEBUG_LOCAL_ONLY_";
         db = LocalDatabase.open(this);
-        authorization = new AuthorizationPolicy(true, "DEBUG_SANDBOX");
+        authorization = AuthorizationPolicy.debugSandbox("DEBUG_SANDBOX");
         repository = new AuthorizedPosRepository(db, authorization);
         requestId = getPreferences(MODE_PRIVATE).getString("checkout_request", null);
         if (requestId == null) rotateRequest();

@@ -19,7 +19,7 @@ public class AuthorizedPosRepositoryTest {
                 .addMigrations(LocalDatabase.MIGRATION_1_2).allowMainThreadQueries().build();
         try {
             db.ledger().saveProduct(new Product("p","tenant","SKU","Kopi",1000,3),false);
-            AuthorizationPolicy policy=new AuthorizationPolicy(false,"boot");
+            AuthorizationPolicy policy=new AuthorizationPolicy("boot");
             AuthorizedPosRepository repository=new AuthorizedPosRepository(db,policy);
             assertDenied(() -> repository.products("tenant"));
             assertDenied(() -> repository.saveProduct(new Product("p","tenant","SKU","Ubah",1000,3),true));

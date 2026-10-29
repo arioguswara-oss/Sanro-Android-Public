@@ -12,19 +12,19 @@ import static org.junit.Assert.*;
 @Config(sdk = 28)
 public class AuthorizationPolicyTest {
     @Test public void noGrantAndWrongTenantFailClosed() {
-        AuthorizationPolicy policy = new AuthorizationPolicy(false, "boot-a");
+        AuthorizationPolicy policy = new AuthorizationPolicy("boot-a");
         assertFalse(policy.allows("tenant-a", AuthorizationPolicy.Operation.SALE_WRITE));
         try { policy.allow("tenant-a", AuthorizationPolicy.Operation.HISTORY_READ); fail("must deny"); }
         catch (SecurityException expected) { }
     }
     @Test public void lockRevokesRepositoryAuthorizationImmediately() {
-        AuthorizationPolicy policy = new AuthorizationPolicy(false, "boot-a");
+        AuthorizationPolicy policy = new AuthorizationPolicy("boot-a");
         policy.lock(); assertFalse(policy.allows("tenant-a", AuthorizationPolicy.Operation.PRODUCT_READ));
         assertFalse(policy.allows("tenant-a", AuthorizationPolicy.Operation.SALE_WRITE));
     }
     @Test public void sandboxRequiresExplicitDebugPolicy() {
-        AuthorizationPolicy policy = new AuthorizationPolicy(true, "DEBUG_SANDBOX");
+        AuthorizationPolicy policy = AuthorizationPolicy.debugSandbox("DEBUG_SANDBOX");
         assertTrue(policy.allows("_DEBUG_LOCAL_ONLY_", AuthorizationPolicy.Operation.SALE_WRITE));
-        assertFalse(new AuthorizationPolicy(false, "boot-a").allows("_DEBUG_LOCAL_ONLY_", AuthorizationPolicy.Operation.SALE_WRITE));
+        assertFalse(new AuthorizationPolicy("boot-a").allows("_DEBUG_LOCAL_ONLY_", AuthorizationPolicy.Operation.SALE_WRITE));
     }
 }
