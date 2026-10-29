@@ -37,10 +37,15 @@ anchor persistence/online revalidation client is wired yet.
 ## Verification status
 
 - `git diff --check`: passed.
-- `gradle :app:testDebugUnitTest :app:lintDebug :app:assembleDebug --no-daemon`:
-  not run; command unavailable (`gradle: command not found`), and Java is absent.
-- No Android test, lint, APK, live server login, or physical printer result is
-  claimed by this checkpoint. CI artifact is available only if GitHub Actions
-  passes after push.
+- Local `gradle :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
+  --no-daemon` could not run (`gradle: command not found`; Java is absent).
+- GitHub Actions run [#36](https://github.com/arioguswara-oss/Sanro-Android-Public/actions/runs/40808793567)
+  on HEAD `ab5526d4e41bb110a607607882181e1939105ece` passed unit tests, Android
+  lint, Debug APK build, and both artifact uploads.
+- Debug APK artifact: `sanro-pos-public-free-debug-PROTOTYPE`, artifact ID
+  `12868929090`, available for 7 days from 2026-10-29. Test/lint report artifact:
+  `sanro-pos-public-test-lint-reports`, artifact ID `12869083562`.
+- No live server login or physical printer result is claimed.
 - No Room schema/data migration was made. Panda Bluetooth transport, ESC/POS
   receipt and cutter code were not changed; physical regression remains pending.
+
