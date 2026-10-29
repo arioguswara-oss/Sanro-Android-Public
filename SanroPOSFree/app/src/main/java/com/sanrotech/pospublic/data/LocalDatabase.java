@@ -25,7 +25,8 @@ public abstract class LocalDatabase extends RoomDatabase {
         }
     };
     private static volatile LocalDatabase instance;
-    public abstract Ledger ledger();
+    // Keep raw DAO access inside this data package; app code must use the gated repository.
+    abstract Ledger ledger();
 
     public static LocalDatabase open(Context context) {
         if (instance == null) {
@@ -115,3 +116,4 @@ public abstract class LocalDatabase extends RoomDatabase {
         }
     }
 }
+
