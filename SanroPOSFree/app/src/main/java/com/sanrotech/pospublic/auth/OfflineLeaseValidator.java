@@ -145,7 +145,10 @@ public final class OfflineLeaseValidator {
     }
     private static boolean bool(Map<String,Object> c,String k) { return Boolean.TRUE.equals(c.get(k)); }
     private static boolean audienceMatches(Object aud,String expected) {
-        return aud instanceof String && eq((String)aud,expected);
+        // Nimbus normalizes registered `aud` strings to a singleton list when parsing JWTClaimsSet.
+        return aud instanceof String ? eq((String)aud,expected) :
+                aud instanceof java.util.List && ((java.util.List<?>)aud).size()==1 &&
+                        ((java.util.List<?>)aud).get(0) instanceof String && eq((String)((java.util.List<?>)aud).get(0),expected);
     }
     private static boolean present(String s) { return s != null && !s.trim().isEmpty(); }
     private static boolean eq(String a,String b) { return a != null && a.equals(b); }

@@ -76,7 +76,8 @@ public class OfflineLeaseValidatorTest {
     }
     @Test public void acceptsVerifiedBoundLeaseAndMapsExpiryToMonotonicClock() throws Exception {
         OfflineLeaseValidator.VerifiedLease result=validator.verify(token(NOW,NOW+23*60*60*1000,"test-k1",Collections.emptyMap()),binding());
-        assertNotNull(result); assertEquals(40_000+23*60*60*1000L,result.expiryElapsedMillis);
+        assertNotNull("valid test-signed lease should verify",result);
+        assertEquals(40_000+23*60*60*1000L,result.expiryElapsedMillis);
         assertEquals(7,result.authorizationEpoch);
     }
     @Test public void rejectsMalformedUnsignedUnknownAndRetiredKeyTokens() throws Exception {
