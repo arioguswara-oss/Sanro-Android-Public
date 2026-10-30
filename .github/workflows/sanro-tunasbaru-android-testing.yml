@@ -67,6 +67,39 @@ jobs:
       - name: Android lint
         run: bash gradlew :app:lintDebug --no-daemon
 
+      - name: Report sanitized lint failures
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+
+          roots = list(Path("app/build").rglob("lint-results-debug.xml"))
+          if roots:
+              issues = ET.parse(roots[0]).getroot().findall("issue")
+              errors = [x for x in issues if x.get("severity") == "Error"]
+              for issue in errors:
+                  location = issue.find("location")
+                  name = Path(location.get("file", "unknown")).name if location is not None else "unknown"
+                  line = location.get("line", "?") if location is not None else "?"
+                  print(f"LINT_ERROR {issue.get('id')} {name}:{line}")
+              print(f"LINT_ERROR_COUNT={len(errors)}")
+          else:
+              reports = list(Path("app/build").rglob("lint-results-debug.txt"))
+              if not reports:
+                  print("LINT_REPORT_UNAVAILABLE")
+              else:
+                  errors = []
+                  for line in reports[0].read_text(errors="replace").splitlines():
+                      match = re.match(r"^.*[/\\]([^/\\:]+):(\\d+): Error: .+\\[([^]]+)\\]$", line)
+                      if match:
+                          errors.append((match.group(3),match.group(1),match.group(2)))
+                  for issue_id, name, line in errors:
+                      print(f"LINT_ERROR {issue_id} {name}:{line}")
+                  print(f"LINT_ERROR_COUNT={len(errors)}")
+          PY
+
       - name: Build signed debug APK
         run: bash gradlew :app:assembleDebug --no-daemon
 
