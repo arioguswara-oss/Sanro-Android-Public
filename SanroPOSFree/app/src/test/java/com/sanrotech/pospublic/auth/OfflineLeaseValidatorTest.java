@@ -28,6 +28,7 @@ public class OfflineLeaseValidatorTest {
     private static final Set<String> WRITES = Collections.singleton("sale.create");
     private static final Set<String> HISTORY = Collections.singleton("history.read");
     private final ECKey signingKey;
+    private final ECPublicKey verificationKey;
     private final OfflineLeaseValidator validator;
     private final FakeTime time = new FakeTime();
 
@@ -35,9 +36,10 @@ public class OfflineLeaseValidatorTest {
         KeyPairGenerator generator=KeyPairGenerator.getInstance("EC");
         generator.initialize(new java.security.spec.ECGenParameterSpec("secp256r1"));
         KeyPair pair=generator.generateKeyPair();
-        signingKey=new ECKey.Builder(Curve.P_256,(ECPublicKey)pair.getPublic()).privateKey((java.security.interfaces.ECPrivateKey)pair.getPrivate()).keyID("test-k1").build();
+        verificationKey=(ECPublicKey)pair.getPublic();
+        signingKey=new ECKey.Builder(Curve.P_256,verificationKey).privateKey((java.security.interfaces.ECPrivateKey)pair.getPrivate()).keyID("test-k1").build();
         Map<String,OfflineLeaseValidator.VerificationKey> keys=new HashMap<>();
-        keys.put("test-k1",new OfflineLeaseValidator.VerificationKey((ECPublicKey)pair.getPublic(),NOW+OfflineLeaseValidator.MAX_LEASE_MS+60_000));
+        keys.put("test-k1",new OfflineLeaseValidator.VerificationKey(verificationKey,NOW+OfflineLeaseValidator.MAX_LEASE_MS+60_000));
         validator=new OfflineLeaseValidator(keys,time);
     }
     private static final class FakeTime implements OfflineLeaseValidator.TrustedTime {
@@ -99,7 +101,7 @@ public class OfflineLeaseValidatorTest {
             public long serverEpochMillis(){return NOW;} public long elapsedRealtimeMillis(){return 40_000;}
             public String bootId(){return "boot_identifier_123456";} public boolean isValid(){return false;}
         };
-        OfflineLeaseValidator noAnchor=new OfflineLeaseValidator(Collections.singletonMap("test-k1",new OfflineLeaseValidator.VerificationKey(signingKey.toPublicKey(),NOW+OfflineLeaseValidator.MAX_LEASE_MS+60_000)),invalidTime);
+        OfflineLeaseValidator noAnchor=new OfflineLeaseValidator(Collections.singletonMap("test-k1",new OfflineLeaseValidator.VerificationKey(verificationKey,NOW+OfflineLeaseValidator.MAX_LEASE_MS+60_000)),invalidTime);
         assertNull(noAnchor.verify(token(NOW,NOW+60_000,"test-k1",Collections.emptyMap()),binding()));
     }
 }
