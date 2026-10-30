@@ -80,16 +80,22 @@ public class OfflineLeaseValidatorTest {
         assertEquals(40_000+23*60*60*1000L,result.expiryElapsedMillis);
         assertEquals(7,result.authorizationEpoch);
     }
-    @Test public void rejectsMalformedUnsignedUnknownAndRetiredKeyTokens() throws Exception {
+    @Test public void rejectsMalformedUnsignedUnknownRetiredAndTamperedKeyTokens() throws Exception {
         assertNull(validator.verify("not.a.jwt",binding()));
         assertNull(validator.verify(token(NOW,NOW+60_000,"unknown",Collections.emptyMap()),binding()));
-        Map<String,Object> retired=new HashMap<>(); retired.put("authorization_epoch",8);
-        assertNull(validator.verify(token(NOW,NOW+60_000,"test-k1",retired),binding()));
+        OfflineLeaseValidator retiredKey=new OfflineLeaseValidator(Collections.singletonMap("test-k1",
+                new OfflineLeaseValidator.VerificationKey(verificationKey,NOW-1)),time);
+        assertNull(retiredKey.verify(token(NOW,NOW+60_000,"test-k1",Collections.emptyMap()),binding()));
+        String signed=token(NOW,NOW+60_000,"test-k1",Collections.emptyMap());
+        char replacement=signed.charAt(signed.length()-1)=='A'?'B':'A';
+        String tampered=signed.substring(0,signed.length()-1)+replacement;
+        assertNull(validator.verify(tampered,binding()));
     }
     @Test public void rejectsWrongBootTenantAccountThumbprintEpochAndPermissions() throws Exception {
         String lease=token(NOW,NOW+60_000,"test-k1",Collections.emptyMap());
         OfflineLeaseValidator.ExpectedBinding b=binding();
         assertNull(validator.verify(lease,new OfflineLeaseValidator.ExpectedBinding(b.issuer,b.audience,b.accountId,b.productAccountId,"ST99999",b.tenantCode,b.deviceId,b.sessionId,b.keyThumbprint,b.bootId,b.authorizationEpoch,b.authorityRevision,WRITES,HISTORY)));
+        assertNull(validator.verify(lease,new OfflineLeaseValidator.ExpectedBinding(b.issuer,b.audience,"account-other",b.productAccountId,b.tenantId,b.tenantCode,b.deviceId,b.sessionId,b.keyThumbprint,b.bootId,b.authorizationEpoch,b.authorityRevision,WRITES,HISTORY)));
         assertNull(validator.verify(lease,new OfflineLeaseValidator.ExpectedBinding(b.issuer,b.audience,b.accountId,b.productAccountId,b.tenantId,b.tenantCode,b.deviceId,b.sessionId,b.keyThumbprint,"different_boot_identifier",b.authorizationEpoch,b.authorityRevision,WRITES,HISTORY)));
         assertNull(validator.verify(token(NOW,NOW+60_000,"test-k1",Collections.singletonMap("authorization_epoch",99)),b));
         assertNull(validator.verify(token(NOW,NOW+60_000,"test-k1",Collections.singletonMap("permissions",Arrays.asList("sale.create","admin.all"))),b));
