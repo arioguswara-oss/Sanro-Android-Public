@@ -1,0 +1,89 @@
+name: SANRO Tunas Baru - Android TESTING Debug APK
+
+# Manual only. Never runs on push or pull_request.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-testing-apk:
+    if: ${{ github.repository == 'arioguswara-oss/Sanro-Android-Public' && github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: private-source/android-testing
+
+    steps:
+      - name: Checkout private Tunas Baru TESTING source (read-only SSH)
+        uses: actions/checkout@v4
+        with:
+          repository: arioguswara-oss/Sanro-Pos-TunasBaru
+          ref: android-testing
+          ssh-key: ${{ secrets.TUNASBARU_TESTING_DEPLOY_KEY }}
+          persist-credentials: false
+          fetch-depth: 1
+          sparse-checkout: android-testing
+          path: private-source
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Prepare Android SDK 35
+        run: |
+          set -euo pipefail
+          test -d "${ANDROID_HOME:?}/cmdline-tools"
+          SDKMANAGER=$(find "$ANDROID_HOME/cmdline-tools" -maxdepth 3 -type f -name sdkmanager -print -quit)
+          test -n "$SDKMANAGER"
+          "$SDKMANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+
+      - name: Guard TESTING identity and source
+        run: |
+          set -euo pipefail
+          test -f app/build.gradle
+          test -f gradle/wrapper/gradle-wrapper.jar
+          grep -Fq "applicationId 'com.sanrotech.pos.testing'" app/build.gradle
+          grep -Fq '"https://test-pos.sanrotech.com/"' app/src/main/java/com/sanrotech/pos/MainActivity.java
+          grep -Fq '"test-pos.sanrotech.com"' app/src/main/java/com/sanrotech/pos/MainActivity.java
+          if grep -RIlE 'https?://pos\\.sanrotech\\.com([/:]|$)' --include='*.java' --include='*.xml' --include='*.gradle' app; then
+            echo 'ERROR: live production URL detected'
+            exit 1
+          fi
+          echo 'SANRO_TESTING_IDENTITY_OK'
+
+      - name: Android unit tests
+        run: bash gradlew :app:testDebugUnitTest --no-daemon
+
+      - name: Android lint
+        run: bash gradlew :app:lintDebug --no-daemon
+
+      - name: Build signed debug APK
+        run: bash gradlew :app:assembleDebug --no-daemon
+
+      - name: Verify APK identity and debug signature
+        run: |
+          set -euo pipefail
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep -Fq "package: name='com.sanrotech.pos.testing'"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify "$APK"
+          sha256sum "$APK"
+          echo 'SANRO_TUNASBARU_TESTING_DEBUG_APK_VERIFIED'
+
+      - name: Upload TESTING APK only (public artifact; do not include source)
+        uses: actions/upload-artifact@v4
+        with:
+          name: SANRO_TUNASBARU_TESTING_DEBUG_APK
+          path: private-source/android-testing/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 3
