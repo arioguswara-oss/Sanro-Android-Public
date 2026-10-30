@@ -55,7 +55,7 @@ jobs:
           grep -Fq "applicationId 'com.sanrotech.pos.testing'" app/build.gradle
           grep -Fq '"https://test-pos.sanrotech.com/"' app/src/main/java/com/sanrotech/pos/MainActivity.java
           grep -Fq '"test-pos.sanrotech.com"' app/src/main/java/com/sanrotech/pos/MainActivity.java
-          if grep -RIlE 'https?://pos\\.sanrotech\\.com([/:]|$)' --include='*.java' --include='*.xml' --include='*.gradle' app; then
+          if grep -RIlF 'https://pos.sanrotech.com' --include='*.java' --include='*.xml' --include='*.gradle' app; then
             echo 'ERROR: live production URL detected'
             exit 1
           fi
