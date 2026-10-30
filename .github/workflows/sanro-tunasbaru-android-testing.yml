@@ -91,10 +91,15 @@ jobs:
                   print("LINT_REPORT_UNAVAILABLE")
               else:
                   errors = []
-                  for line in reports[0].read_text(errors="replace").splitlines():
-                      match = re.match(r"^.*[/\\]([^/\\:]+):(\\d+): Error: .+\\[([^]]+)\\]$", line)
-                      if match:
-                          errors.append((match.group(3),match.group(1),match.group(2)))
+                  for entry in reports[0].read_text(errors="replace").splitlines():
+                      if ": Error: " not in entry:
+                          continue
+                      location, detail = entry.split(": Error: ", 1)
+                      location_parts = location.rsplit(":", 1)
+                      if len(location_parts) != 2 or not location_parts[1].isdigit():
+                          continue
+                      issue_id = detail.rsplit("[", 1)[-1].rstrip("]") if detail.endswith("]") else "UNKNOWN"
+                      errors.append((issue_id, Path(location_parts[0]).name, location_parts[1]))
                   for issue_id, name, line in errors:
                       print(f"LINT_ERROR {issue_id} {name}:{line}")
                   print(f"LINT_ERROR_COUNT={len(errors)}")
