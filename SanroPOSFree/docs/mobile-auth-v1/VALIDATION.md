@@ -1,44 +1,39 @@
-# Validation — proposal only
+# Android native auth security implementation validation
 
-Status WORK, not staging acceptance. No backend implementation or Android runtime
-changed in this contract task; no new APK or production verification is claimed.
+Status: implementation branch, not staging acceptance. Backend source reviewed at
+`arioguswara-oss/Sanro-POS-Stock` commit
+`706fe2f5b413a9253ed4deded0870495c48e0746`; OpenAPI is `0.2.0-dev` with the
+required `boot_id`, `require_online_after_reboot`, and
+`lock_local_data_on_security_event` lease claims. Its origin remains deliberately
+`.invalid`; no endpoint or Android trust root is approved.
 
-Performed locally:
-- JSON parse: OpenAPI, evidence manifest and fixture files.
-- JSON Schema Draft 2020-12 meta validation: 23 component schemas.
-- Reference resolution: 36 local `$ref` values resolve.
-- Schema fixtures: 11 expected accept/reject results, including expired Free and
-  paid read-only; malformed/missing binding, unknown plan and cloud mode rejected.
-- `git diff --check`: clean.
-- Existing backend source tests, Node 22.22.1, exit 0, 5/5 test files pass:
-  `node --test test/pos-login-service.test.js test/session-activity.test.js test/pos-operational-access-gate.test.js test/access-context-client.test.js test/pos-free-activation-service.test.js`
-  Run from the pinned snapshot's `v2-login-register/`. These use source doubles,
-  not production or staged authenticated HTTP / MySQL race verification.
+Implemented on Android:
+- Nimbus JOSE + JWT ES256 proof serialization, RFC 7638 public JWK thumbprints,
+  AndroidKeyStore P-256 signing key and token `ath` binding.
+- HTTPS-only DPoP target validation and strict, single-use challenge parsing. The
+  challenge server time is advanced using elapsed realtime, not handset wall time.
+- Compact JWS lease verification against explicit `kid` to public-key allowlists,
+  with verification retirement deadlines, exact protected-header/claim sets,
+  account/product/tenant/device/session/key/epoch binding, a 24-hour maximum,
+  entitlement expiry, boot binding and mandatory reboot/security-event flags.
+- Room policy lease installation only accepts a verifier-created one-use result.
+  The debug sandbox is pinned to `DEBUG_SANDBOX`; normal policy cannot access it.
+- Focused tests for signed lease validation failures, malformed challenges, tenant
+  mismatch, reboot mismatch, epoch mismatch, permissions, expiry and sandbox lock.
 
-Not performed: full OpenAPI toolchain conformance lint, JOSE/DPoP interop, staging
-HTTP calls, real MySQL concurrency, staged device/recovery, mobile token handling,
-offline authorization, physical printer UAT. The 23 Scenario/Scenario Outline
-sections in acceptance.feature are acceptance specifications, not an executable
-passing adapter suite. They become step implementations only after backend coding
-is approved. Structural JSON validation cannot certify signature or time logic.
+Limitations and required gates:
+- No verified Android signing trust root or rotation manifest is available. The
+  verifier requires a configured trust set and therefore rejects all leases until
+  that trust is provisioned through a reviewed release configuration.
+- No approved HTTPS staging origin or genuine QA authority is available. No
+  network login, refresh/logout/recovery, staging activation, persistent time
+  anchor, or signed context-to-read-only grant path is enabled in the app.
+- Local Gradle is unavailable in this workspace (`gradle` and wrapper absent).
+  Android unit tests, lint, and debug build must be reported from GitHub Actions.
+- Cryptographic unit-test leases are signed with an ephemeral test-only key and
+  are not connected to Room or installed as operational grants.
 
-Reproduce schema checks with Python 3 and installed jsonschema:
-
-```python
-import json
-from pathlib import Path
-from jsonschema import Draft202012Validator, FormatChecker
-p = Path('SanroPOSFree/docs/mobile-auth-v1')  # backend PR: v2-login-register/docs/mobile-auth-v1
-api = json.loads((p / 'openapi.json').read_text())
-for schema in api['components']['schemas'].values():
-    Draft202012Validator.check_schema(schema)
-for case in json.loads((p / 'schema-fixtures.json').read_text())['cases']:
-    schema = dict(api['components']['schemas'][case['schema']], components=api['components'])
-    valid = not list(Draft202012Validator(schema, format_checker=FormatChecker()).iter_errors(case['value']))
-    assert valid == case['valid'], case['name']
-```
-
-The existing Android c705ed3 build had 14 passing tests, lint success with 9
-warnings and a Debug APK in Actions 40566181169. That evidence is for locked
-activation/sandbox behavior, **not** native login. No duplicate APK rebuild is
-needed for this documentation-only proposal.
+No production/staging service or database was contacted. No Room schema/migration,
+cashier transaction, history, printer implementation, or release-signing config was
+changed. CI must run on this branch before these components can be considered
+validated. Even a passing CI run does not establish staging readiness.

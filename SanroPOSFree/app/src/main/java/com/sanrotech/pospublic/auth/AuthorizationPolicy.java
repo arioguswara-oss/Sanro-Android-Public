@@ -8,19 +8,30 @@ public final class AuthorizationPolicy {
     private AuthGrant grant;
     private final boolean sandbox;
     private final String currentBootId;
+    private boolean sandboxLocked;
 
     public AuthorizationPolicy(String currentBootId) { this.sandbox = false; this.currentBootId = currentBootId; }
     public static AuthorizationPolicy debugSandbox(String currentBootId) {
         if (!com.sanrotech.pospublic.BuildConfig.DEBUG) throw new SecurityException("Debug sandbox unavailable in release");
+        if (!"DEBUG_SANDBOX".equals(currentBootId)) throw new SecurityException("Sandbox tenant is fixed");
         return new AuthorizationPolicy(true, currentBootId);
     }
     private AuthorizationPolicy(boolean sandbox, String currentBootId) {
         this.sandbox = sandbox; this.currentBootId = currentBootId;
     }
-    synchronized void installVerifiedGrant(AuthGrant verifiedGrant) { grant = verifiedGrant; }
-    public synchronized void lock() { grant = null; }
+    /** Installs only a lease object that can be created by the cryptographic verifier. */
+    synchronized void installVerifiedLease(OfflineLeaseValidator.VerifiedLease lease) {
+        if (lease == null || currentBootId == null || !currentBootId.equals(lease.bootId) || !lease.claimForInstallation()) {
+            lock();
+            throw new SecurityException("Verified lease does not match this boot");
+        }
+        grant = new AuthGrant(lease.accountId, lease.tenantId, lease.deviceId, lease.sessionId,
+                lease.bootId, AuthGrant.Mode.READ_WRITE, lease.permissions, lease.historyPermissions,
+                lease.expiryElapsedMillis, true, false, false);
+    }
+    public synchronized void lock() { grant = null; sandboxLocked = true; }
     public synchronized boolean allows(String tenantId, Operation operation) {
-        if (sandbox) return true; // Explicitly isolated DEBUG-only tenant; never an account grant.
+        if (sandbox) return !sandboxLocked && same(tenantId, currentBootId);
         if (grant == null || !grant.authenticated || grant.suspended || grant.transferred
                 || !same(grant.tenantId, tenantId) || !same(grant.bootId, currentBootId)) return false;
         String capability = capability(operation);
@@ -36,7 +47,7 @@ public final class AuthorizationPolicy {
     private static boolean same(String a, String b) { return a != null && a.equals(b); }
     private static String capability(Operation operation) {
         switch (operation) {
-            case PRODUCT_READ: return "product.read";
+            case PRODUCT_READ: return "stock.read";
             case HISTORY_READ: return "history.read";
             case REPRINT: return "receipt.reprint";
             case CART_WRITE: return "cart.write";

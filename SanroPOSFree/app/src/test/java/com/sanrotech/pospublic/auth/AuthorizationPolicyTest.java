@@ -24,7 +24,10 @@ public class AuthorizationPolicyTest {
     }
     @Test public void sandboxRequiresExplicitDebugPolicy() {
         AuthorizationPolicy policy = AuthorizationPolicy.debugSandbox("DEBUG_SANDBOX");
-        assertTrue(policy.allows("_DEBUG_LOCAL_ONLY_", AuthorizationPolicy.Operation.SALE_WRITE));
+        assertTrue(policy.allows("DEBUG_SANDBOX", AuthorizationPolicy.Operation.SALE_WRITE));
+        assertFalse(policy.allows("ST12345", AuthorizationPolicy.Operation.SALE_WRITE));
+        policy.lock();
+        assertFalse(policy.allows("DEBUG_SANDBOX", AuthorizationPolicy.Operation.SALE_WRITE));
         assertFalse(new AuthorizationPolicy("boot-a").allows("_DEBUG_LOCAL_ONLY_", AuthorizationPolicy.Operation.SALE_WRITE));
     }
 }

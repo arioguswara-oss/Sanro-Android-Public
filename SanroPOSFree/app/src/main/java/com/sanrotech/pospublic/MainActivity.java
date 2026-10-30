@@ -66,7 +66,7 @@ public final class MainActivity extends Activity {
         ScrollView scroll = new ScrollView(this);
         scroll.addView(content);
         // No debug tenant or operational database is selected in release.
-        tenant = "_DEBUG_LOCAL_ONLY_";
+        tenant = "DEBUG_SANDBOX";
         db = LocalDatabase.open(this);
         authorization = AuthorizationPolicy.debugSandbox("DEBUG_SANDBOX");
         repository = new AuthorizedPosRepository(db, authorization);
