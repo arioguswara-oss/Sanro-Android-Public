@@ -33,7 +33,10 @@
         ],
         "history_permissions": [
           "history.read"
-        ]
+        ],
+        "local_data_access": "AUTHORIZED",
+        "require_online_after_reboot": true,
+        "lock_local_data_on_security_event": true
       }
     },
     {
@@ -66,7 +69,10 @@
         "permissions": [],
         "history_permissions": [
           "history.read"
-        ]
+        ],
+        "local_data_access": "AUTHORIZED",
+        "require_online_after_reboot": true,
+        "lock_local_data_on_security_event": true
       }
     },
     {
@@ -101,7 +107,10 @@
         ],
         "history_permissions": [
           "history.read"
-        ]
+        ],
+        "local_data_access": "AUTHORIZED",
+        "require_online_after_reboot": true,
+        "lock_local_data_on_security_event": true
       }
     },
     {
@@ -134,7 +143,10 @@
         "permissions": [],
         "history_permissions": [
           "history.read"
-        ]
+        ],
+        "local_data_access": "AUTHORIZED",
+        "require_online_after_reboot": true,
+        "lock_local_data_on_security_event": true
       }
     },
     {
@@ -167,7 +179,10 @@
         "permissions": [],
         "history_permissions": [
           "history.read"
-        ]
+        ],
+        "local_data_access": "AUTHORIZED",
+        "require_online_after_reboot": true,
+        "lock_local_data_on_security_event": true
       }
     },
     {
@@ -200,7 +215,10 @@
         "permissions": [],
         "history_permissions": [
           "history.read"
-        ]
+        ],
+        "local_data_access": "AUTHORIZED",
+        "require_online_after_reboot": true,
+        "lock_local_data_on_security_event": true
       }
     },
     {
@@ -233,7 +251,10 @@
         "permissions": [],
         "history_permissions": [
           "history.read"
-        ]
+        ],
+        "local_data_access": "AUTHORIZED",
+        "require_online_after_reboot": true,
+        "lock_local_data_on_security_event": true
       }
     },
     {
@@ -266,7 +287,10 @@
         "permissions": [],
         "history_permissions": [
           "history.read"
-        ]
+        ],
+        "local_data_access": "AUTHORIZED",
+        "require_online_after_reboot": true,
+        "lock_local_data_on_security_event": true
       }
     },
     {
@@ -300,7 +324,10 @@
         ],
         "history_permissions": [
           "history.read"
-        ]
+        ],
+        "local_data_access": "AUTHORIZED",
+        "require_online_after_reboot": true,
+        "lock_local_data_on_security_event": true
       }
     },
     {
@@ -336,7 +363,10 @@
         "history_permissions": [
           "history.read"
         ],
-        "owner_override": true
+        "owner_override": true,
+        "local_data_access": "AUTHORIZED",
+        "require_online_after_reboot": true,
+        "lock_local_data_on_security_event": true
       }
     },
     {
@@ -369,7 +399,10 @@
         "permissions": [],
         "history_permissions": [
           "history.read"
-        ]
+        ],
+        "local_data_access": "AUTHORIZED",
+        "require_online_after_reboot": true,
+        "lock_local_data_on_security_event": true
       }
     }
   ]

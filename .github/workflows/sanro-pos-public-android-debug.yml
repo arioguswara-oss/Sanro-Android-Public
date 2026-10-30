@@ -5,6 +5,7 @@ on:
       - feature/pos-free-local-first-v0
       - feature/pos-free-functional-mvp-v1
       - feature/pos-public-android-native-auth-qa-20261029
+      - feature/mobile-auth-contract-integration-20261030
     paths:
       - 'SanroPOSFree/**'
       - '.github/workflows/sanro-pos-public-android-debug.yml'

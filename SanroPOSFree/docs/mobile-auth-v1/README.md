@@ -1,8 +1,11 @@
-# Mobile auth integration handoff — WORK
+# Mobile auth integration handoff — backend contract v0.2.0-dev
 
-Backend draft proposal: [Sanro-POS-Stock PR #16](https://github.com/arioguswara-oss/Sanro-POS-Stock/pull/16).
-It contains documentation only and requires Owner review before server coding.
-Tracking issues remain open: Android #4, backend #15.
+The OpenAPI and synthetic schema fixtures in this folder are synchronized to the
+implemented, nonproduction backend adapter branch inspected on 30 October 2026.
+They are not evidence of a deployed endpoint. Its server remains `.invalid` and
+the backend source states the adapter is not deployed. Android network login and
+trusted lease installation remain blocked pending an approved endpoint and key
+trust configuration.
 
 - [Audit, design, fixed rules and remaining decisions](PROPOSAL.md)
 - [Proposed OpenAPI and strict response schemas](openapi.json)
@@ -11,9 +14,8 @@ Tracking issues remain open: Android #4, backend #15.
 - [Pinned source evidence](source-evidence.json)
 - [Performed validation and limits](VALIDATION.md)
 
-Next: review proposal; select lease/revocation policy and authorize isolated
-staging; inspect redacted deployed startup/revision and authority schema; approve
-a separate adapter implementation PR; implement and pass staged acceptance;
-then wire native Android auth/Keystore/Room gates and run hardware regression.
-Do not unlock Android activation from this specification alone. Trial 3 months,
-expiry Read-Only, single device and local Free storage are already fixed rules.
+The Java Room gate and strict context/error policy remain fail-closed. Synthetic
+fixtures cannot install a grant. Next: implement and review the Android DPoP
+transport and pinned lease verifier against the backend contract, then run tests
+through the existing Actions workflow. Keep network activation disabled until
+staging endpoint, signing trust and genuine QA authority are separately supplied.

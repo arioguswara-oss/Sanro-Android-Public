@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "SANRO POS2 Mobile Auth \u2014 PROPOSED, NOT DEPLOYED",
-    "version": "0.1.0-proposal",
-    "description": "Docs-only contract candidate for isolated staging. No adapter is implemented. Operational activation is FREE only. Recognized paid plans may authenticate for read-only history; paid operational modes are outside this adapter."
+    "title": "SANRO POS2 Mobile Auth \u2014 nonproduction development adapter",
+    "version": "0.2.0-dev",
+    "description": "Implemented opt-in nonproduction adapter. No production/staging deployment. Owner Decisions 001-004 applied; boot and local-data lock fields make the approved policies explicit. The Android consumer remains a separate task."
   },
   "servers": [
     {
@@ -279,7 +279,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CommandRequest"
+                "$ref": "#/components/schemas/LeaseRequest"
               }
             }
           }
@@ -345,7 +345,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CommandRequest"
+                "$ref": "#/components/schemas/LeaseRequest"
               }
             }
           }
@@ -779,7 +779,10 @@
           "entitlement_expires_at",
           "access_mode",
           "permissions",
-          "history_permissions"
+          "history_permissions",
+          "local_data_access",
+          "require_online_after_reboot",
+          "lock_local_data_on_security_event"
         ],
         "properties": {
           "contract_version": {
@@ -925,6 +928,19 @@
                 "receipt.reprint"
               ]
             }
+          },
+          "local_data_access": {
+            "type": "string",
+            "enum": [
+              "LOCKED",
+              "AUTHORIZED"
+            ]
+          },
+          "require_online_after_reboot": {
+            "const": true
+          },
+          "lock_local_data_on_security_event": {
+            "const": true
           }
         },
         "allOf": [
@@ -1074,7 +1090,10 @@
           "trial_started_at",
           "trial_expires_at",
           "entitlement_expires_at",
-          "jti"
+          "jti",
+          "boot_id",
+          "require_online_after_reboot",
+          "lock_local_data_on_security_event"
         ],
         "properties": {
           "iss": {
@@ -1202,6 +1221,16 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 128
+          },
+          "boot_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{16,128}$"
+          },
+          "require_online_after_reboot": {
+            "const": true
+          },
+          "lock_local_data_on_security_event": {
+            "const": true
           }
         },
         "description": "Decoded ES256 JWS payload. Cross-field time/identity/signature constraints in PROPOSAL.md are mandatory; schema validity alone never authorizes writes."
@@ -1412,7 +1441,8 @@
                   "WAIT",
                   "RETRY",
                   "SUBSCRIPTION",
-                  "GET_CHALLENGE"
+                  "GET_CHALLENGE",
+                  "LOCK_LOCAL_DATA"
                 ]
               }
             }
@@ -1572,10 +1602,29 @@
             "$ref": "#/components/schemas/Logout"
           }
         }
+      },
+      "LeaseRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "challenge_id",
+          "boot_id"
+        ],
+        "properties": {
+          "challenge_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "boot_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{16,128}$"
+          }
+        }
       }
     }
   },
-  "x-status": "WORK / OWNER APPROVAL REQUIRED",
+  "x-status": "WORK / LOCAL TESTING ONLY",
   "x-cross-field-rules": "PROPOSAL.md",
   "x-no-production-target": true
 }

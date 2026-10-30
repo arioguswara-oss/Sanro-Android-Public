@@ -10,23 +10,27 @@ public final class TenantContextValidator {
     public static final class Context {
         public String contractVersion, accountId, productAccountId, tenantId, tenantCode, deviceId,
                 deviceJkt, sessionId, accountStatus, tenantStatus, productStatus, subscriptionStatus,
-                plan, storageMode, accessMode;
+                plan, storageMode, accessMode, localDataAccess;
+        public boolean authenticated, requireOnlineAfterReboot, lockLocalDataOnSecurityEvent;
         public long authorizationEpoch, authorityRevision;
         public Instant serverTime, entitlementExpiresAt, trialStartedAt, trialExpiresAt;
         public Set<String> permissions, historyPermissions;
     }
     public boolean isValid(Context c, String expectedJkt, String expectedDevice, String expectedTenant) {
-        if (c == null || !eq(c.contractVersion,"1") || !present(c.accountId) || !present(c.productAccountId)
+        if (c == null || !eq(c.contractVersion,"1") || !c.authenticated || !present(c.accountId) || !present(c.productAccountId)
                 || !present(c.tenantId) || !present(c.tenantCode) || !present(c.deviceId) || !present(c.deviceJkt)
                 || !present(c.sessionId) || c.authorizationEpoch < 1 || c.authorityRevision < 1
                 || !eq(c.deviceJkt,expectedJkt) || !eq(c.deviceId,expectedDevice) || !eq(c.tenantId,expectedTenant)
-                || c.serverTime == null || c.entitlementExpiresAt == null || !eq(c.storageMode,"LOCAL_ONLY")) return false;
+                || c.serverTime == null || c.entitlementExpiresAt == null || !eq(c.storageMode,"LOCAL_ONLY")
+                || !c.requireOnlineAfterReboot || !c.lockLocalDataOnSecurityEvent
+                || !oneOf(c.localDataAccess,"AUTHORIZED","LOCKED")) return false;
         if (!oneOf(c.accountStatus,"ACTIVE") || !oneOf(c.tenantStatus,"ACTIVE") || !oneOf(c.productStatus,"ACTIVE")) return false;
         if (!oneOf(c.plan,"FREE","STARTER","PRO") || !oneOf(c.subscriptionStatus,"ACTIVE","EXPIRED")) return false;
         if (!oneOf(c.accessMode,"READ_WRITE","READ_ONLY") || c.permissions == null || c.historyPermissions == null) return false;
         if (!known(c.permissions, "sale.create", "product.write", "cart.write")
                 || !known(c.historyPermissions,"history.read","receipt.reprint","history.export")) return false;
         if ("FREE".equals(c.plan) && (c.trialStartedAt == null || c.trialExpiresAt == null)) return false;
+        if ("LOCKED".equals(c.localDataAccess)) return false;
         if ("EXPIRED".equals(c.subscriptionStatus)) return !c.entitlementExpiresAt.isAfter(c.serverTime)
                 && "READ_ONLY".equals(c.accessMode) && c.permissions.isEmpty();
         if (!c.entitlementExpiresAt.isAfter(c.serverTime)) return false;
