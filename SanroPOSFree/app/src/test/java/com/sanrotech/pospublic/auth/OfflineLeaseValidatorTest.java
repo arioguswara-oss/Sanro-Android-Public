@@ -87,8 +87,9 @@ public class OfflineLeaseValidatorTest {
                 new OfflineLeaseValidator.VerificationKey(verificationKey,NOW-1)),time);
         assertNull(retiredKey.verify(token(NOW,NOW+60_000,"test-k1",Collections.emptyMap()),binding()));
         String signed=token(NOW,NOW+60_000,"test-k1",Collections.emptyMap());
-        char replacement=signed.charAt(signed.length()-1)=='A'?'B':'A';
-        String tampered=signed.substring(0,signed.length()-1)+replacement;
+        int signatureStart=signed.lastIndexOf('.')+1;
+        char replacement=signed.charAt(signatureStart)=='A'?'B':'A';
+        String tampered=signed.substring(0,signatureStart)+replacement+signed.substring(signatureStart+1);
         assertNull(validator.verify(tampered,binding()));
     }
     @Test public void rejectsWrongBootTenantAccountThumbprintEpochAndPermissions() throws Exception {
