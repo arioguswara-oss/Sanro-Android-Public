@@ -49,13 +49,13 @@ public final class AuthorizationPolicy {
         return true;
     }
     private static boolean same(String a, String b) { return a != null && a.equals(b); }
-    private static String capability(Operation operation) {
+    static String capability(Operation operation) {
         switch (operation) {
             case PRODUCT_READ: return "stock.read";
             case HISTORY_READ: return "history.read";
             case REPRINT: return "receipt.reprint";
             case CART_WRITE: return "cart.write";
-            case PRODUCT_WRITE: return "product.write";
+            case PRODUCT_WRITE: return "stock.write";
             case SALE_WRITE: return "sale.create";
             default: throw new IllegalArgumentException("Unknown operation");
         }

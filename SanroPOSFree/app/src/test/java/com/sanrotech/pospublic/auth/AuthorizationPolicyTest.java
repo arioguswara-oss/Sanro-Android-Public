@@ -30,4 +30,9 @@ public class AuthorizationPolicyTest {
         assertFalse(policy.allows("DEBUG_SANDBOX", AuthorizationPolicy.Operation.SALE_WRITE));
         assertFalse(new AuthorizationPolicy("boot-a").allows("_DEBUG_LOCAL_ONLY_", AuthorizationPolicy.Operation.SALE_WRITE));
     }
+    @Test public void repositoryOperationsUseBackendContractCapabilities() {
+        assertEquals("stock.read", AuthorizationPolicy.capability(AuthorizationPolicy.Operation.PRODUCT_READ));
+        assertEquals("stock.write", AuthorizationPolicy.capability(AuthorizationPolicy.Operation.PRODUCT_WRITE));
+        assertEquals("sale.create", AuthorizationPolicy.capability(AuthorizationPolicy.Operation.SALE_WRITE));
+    }
 }
