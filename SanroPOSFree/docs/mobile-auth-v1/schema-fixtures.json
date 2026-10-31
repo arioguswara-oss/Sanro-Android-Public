@@ -1,0 +1,376 @@
+{
+  "notice": "SYNTHETIC schema examples, NOT signed grants; never load as operational credentials",
+  "cases": [
+    {
+      "name": "eligible-context-not-activation",
+      "schema": "Context",
+      "valid": true,
+      "value": {
+        "contract_version": "1",
+        "authenticated": true,
+        "account_id": "fixture-account",
+        "product_account_id": "fixture-pos-account",
+        "tenant_id": "ST00001",
+        "tenant_code": "SR00001",
+        "device_id": "fixture-device",
+        "device_jkt": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "session_id": "fixture-session",
+        "authorization_epoch": 1,
+        "authority_revision": 1,
+        "server_time": "2026-10-28T00:00:00Z",
+        "account_status": "ACTIVE",
+        "tenant_status": "ACTIVE",
+        "product_status": "ACTIVE",
+        "subscription_status": "ACTIVE",
+        "plan": "FREE",
+        "storage_mode": "LOCAL_ONLY",
+        "trial_started_at": "2026-10-28T00:00:00Z",
+        "trial_expires_at": "2027-01-28T00:00:00Z",
+        "entitlement_expires_at": "2027-01-28T00:00:00Z",
+        "access_mode": "READ_WRITE",
+        "permissions": [
+          "sale.create"
+        ],
+        "history_permissions": [
+          "history.read"
+        ]
+      }
+    },
+    {
+      "name": "expired-readonly-context",
+      "schema": "Context",
+      "valid": true,
+      "value": {
+        "contract_version": "1",
+        "authenticated": true,
+        "account_id": "fixture-account",
+        "product_account_id": "fixture-pos-account",
+        "tenant_id": "ST00001",
+        "tenant_code": "SR00001",
+        "device_id": "fixture-device",
+        "device_jkt": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "session_id": "fixture-session",
+        "authorization_epoch": 1,
+        "authority_revision": 1,
+        "server_time": "2027-01-28T00:00:00Z",
+        "account_status": "ACTIVE",
+        "tenant_status": "ACTIVE",
+        "product_status": "ACTIVE",
+        "subscription_status": "EXPIRED",
+        "plan": "FREE",
+        "storage_mode": "LOCAL_ONLY",
+        "trial_started_at": "2026-10-28T00:00:00Z",
+        "trial_expires_at": "2027-01-28T00:00:00Z",
+        "entitlement_expires_at": "2027-01-28T00:00:00Z",
+        "access_mode": "READ_ONLY",
+        "permissions": [],
+        "history_permissions": [
+          "history.read"
+        ]
+      }
+    },
+    {
+      "name": "expired-write-permission",
+      "schema": "Context",
+      "valid": false,
+      "value": {
+        "contract_version": "1",
+        "authenticated": true,
+        "account_id": "fixture-account",
+        "product_account_id": "fixture-pos-account",
+        "tenant_id": "ST00001",
+        "tenant_code": "SR00001",
+        "device_id": "fixture-device",
+        "device_jkt": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "session_id": "fixture-session",
+        "authorization_epoch": 1,
+        "authority_revision": 1,
+        "server_time": "2027-01-28T00:00:00Z",
+        "account_status": "ACTIVE",
+        "tenant_status": "ACTIVE",
+        "product_status": "ACTIVE",
+        "subscription_status": "EXPIRED",
+        "plan": "FREE",
+        "storage_mode": "LOCAL_ONLY",
+        "trial_started_at": "2026-10-28T00:00:00Z",
+        "trial_expires_at": "2027-01-28T00:00:00Z",
+        "entitlement_expires_at": "2027-01-28T00:00:00Z",
+        "access_mode": "READ_ONLY",
+        "permissions": [
+          "sale.create"
+        ],
+        "history_permissions": [
+          "history.read"
+        ]
+      }
+    },
+    {
+      "name": "expired-write-mode",
+      "schema": "Context",
+      "valid": false,
+      "value": {
+        "contract_version": "1",
+        "authenticated": true,
+        "account_id": "fixture-account",
+        "product_account_id": "fixture-pos-account",
+        "tenant_id": "ST00001",
+        "tenant_code": "SR00001",
+        "device_id": "fixture-device",
+        "device_jkt": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "session_id": "fixture-session",
+        "authorization_epoch": 1,
+        "authority_revision": 1,
+        "server_time": "2027-01-28T00:00:00Z",
+        "account_status": "ACTIVE",
+        "tenant_status": "ACTIVE",
+        "product_status": "ACTIVE",
+        "subscription_status": "EXPIRED",
+        "plan": "FREE",
+        "storage_mode": "LOCAL_ONLY",
+        "trial_started_at": "2026-10-28T00:00:00Z",
+        "trial_expires_at": "2027-01-28T00:00:00Z",
+        "entitlement_expires_at": "2027-01-28T00:00:00Z",
+        "access_mode": "READ_WRITE",
+        "permissions": [],
+        "history_permissions": [
+          "history.read"
+        ]
+      }
+    },
+    {
+      "name": "unknown-plan",
+      "schema": "Context",
+      "valid": false,
+      "value": {
+        "contract_version": "1",
+        "authenticated": true,
+        "account_id": "fixture-account",
+        "product_account_id": "fixture-pos-account",
+        "tenant_id": "ST00001",
+        "tenant_code": "SR00001",
+        "device_id": "fixture-device",
+        "device_jkt": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "session_id": "fixture-session",
+        "authorization_epoch": 1,
+        "authority_revision": 1,
+        "server_time": "2027-01-28T00:00:00Z",
+        "account_status": "ACTIVE",
+        "tenant_status": "ACTIVE",
+        "product_status": "ACTIVE",
+        "subscription_status": "EXPIRED",
+        "plan": "FUTURE",
+        "storage_mode": "LOCAL_ONLY",
+        "trial_started_at": "2026-10-28T00:00:00Z",
+        "trial_expires_at": "2027-01-28T00:00:00Z",
+        "entitlement_expires_at": "2027-01-28T00:00:00Z",
+        "access_mode": "READ_ONLY",
+        "permissions": [],
+        "history_permissions": [
+          "history.read"
+        ]
+      }
+    },
+    {
+      "name": "cloud-mode",
+      "schema": "Context",
+      "valid": false,
+      "value": {
+        "contract_version": "1",
+        "authenticated": true,
+        "account_id": "fixture-account",
+        "product_account_id": "fixture-pos-account",
+        "tenant_id": "ST00001",
+        "tenant_code": "SR00001",
+        "device_id": "fixture-device",
+        "device_jkt": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "session_id": "fixture-session",
+        "authorization_epoch": 1,
+        "authority_revision": 1,
+        "server_time": "2027-01-28T00:00:00Z",
+        "account_status": "ACTIVE",
+        "tenant_status": "ACTIVE",
+        "product_status": "ACTIVE",
+        "subscription_status": "EXPIRED",
+        "plan": "FREE",
+        "storage_mode": "DIRECT_CLOUD",
+        "trial_started_at": "2026-10-28T00:00:00Z",
+        "trial_expires_at": "2027-01-28T00:00:00Z",
+        "entitlement_expires_at": "2027-01-28T00:00:00Z",
+        "access_mode": "READ_ONLY",
+        "permissions": [],
+        "history_permissions": [
+          "history.read"
+        ]
+      }
+    },
+    {
+      "name": "tenant-code-used-as-id",
+      "schema": "Context",
+      "valid": false,
+      "value": {
+        "contract_version": "1",
+        "authenticated": true,
+        "account_id": "fixture-account",
+        "product_account_id": "fixture-pos-account",
+        "tenant_id": "SR00001",
+        "tenant_code": "SR00001",
+        "device_id": "fixture-device",
+        "device_jkt": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "session_id": "fixture-session",
+        "authorization_epoch": 1,
+        "authority_revision": 1,
+        "server_time": "2027-01-28T00:00:00Z",
+        "account_status": "ACTIVE",
+        "tenant_status": "ACTIVE",
+        "product_status": "ACTIVE",
+        "subscription_status": "EXPIRED",
+        "plan": "FREE",
+        "storage_mode": "LOCAL_ONLY",
+        "trial_started_at": "2026-10-28T00:00:00Z",
+        "trial_expires_at": "2027-01-28T00:00:00Z",
+        "entitlement_expires_at": "2027-01-28T00:00:00Z",
+        "access_mode": "READ_ONLY",
+        "permissions": [],
+        "history_permissions": [
+          "history.read"
+        ]
+      }
+    },
+    {
+      "name": "unauthenticated",
+      "schema": "Context",
+      "valid": false,
+      "value": {
+        "contract_version": "1",
+        "authenticated": false,
+        "account_id": "fixture-account",
+        "product_account_id": "fixture-pos-account",
+        "tenant_id": "ST00001",
+        "tenant_code": "SR00001",
+        "device_id": "fixture-device",
+        "device_jkt": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "session_id": "fixture-session",
+        "authorization_epoch": 1,
+        "authority_revision": 1,
+        "server_time": "2027-01-28T00:00:00Z",
+        "account_status": "ACTIVE",
+        "tenant_status": "ACTIVE",
+        "product_status": "ACTIVE",
+        "subscription_status": "EXPIRED",
+        "plan": "FREE",
+        "storage_mode": "LOCAL_ONLY",
+        "trial_started_at": "2026-10-28T00:00:00Z",
+        "trial_expires_at": "2027-01-28T00:00:00Z",
+        "entitlement_expires_at": "2027-01-28T00:00:00Z",
+        "access_mode": "READ_ONLY",
+        "permissions": [],
+        "history_permissions": [
+          "history.read"
+        ]
+      }
+    },
+    {
+      "name": "missing-device-proof-binding",
+      "schema": "Context",
+      "valid": false,
+      "value": {
+        "contract_version": "1",
+        "authenticated": true,
+        "account_id": "fixture-account",
+        "product_account_id": "fixture-pos-account",
+        "tenant_id": "ST00001",
+        "tenant_code": "SR00001",
+        "device_id": "fixture-device",
+        "session_id": "fixture-session",
+        "authorization_epoch": 1,
+        "authority_revision": 1,
+        "server_time": "2026-10-28T00:00:00Z",
+        "account_status": "ACTIVE",
+        "tenant_status": "ACTIVE",
+        "product_status": "ACTIVE",
+        "subscription_status": "ACTIVE",
+        "plan": "FREE",
+        "storage_mode": "LOCAL_ONLY",
+        "trial_started_at": "2026-10-28T00:00:00Z",
+        "trial_expires_at": "2027-01-28T00:00:00Z",
+        "entitlement_expires_at": "2027-01-28T00:00:00Z",
+        "access_mode": "READ_WRITE",
+        "permissions": [
+          "sale.create"
+        ],
+        "history_permissions": [
+          "history.read"
+        ]
+      }
+    },
+    {
+      "name": "unknown-authority-override",
+      "schema": "Context",
+      "valid": false,
+      "value": {
+        "contract_version": "1",
+        "authenticated": true,
+        "account_id": "fixture-account",
+        "product_account_id": "fixture-pos-account",
+        "tenant_id": "ST00001",
+        "tenant_code": "SR00001",
+        "device_id": "fixture-device",
+        "device_jkt": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "session_id": "fixture-session",
+        "authorization_epoch": 1,
+        "authority_revision": 1,
+        "server_time": "2026-10-28T00:00:00Z",
+        "account_status": "ACTIVE",
+        "tenant_status": "ACTIVE",
+        "product_status": "ACTIVE",
+        "subscription_status": "ACTIVE",
+        "plan": "FREE",
+        "storage_mode": "LOCAL_ONLY",
+        "trial_started_at": "2026-10-28T00:00:00Z",
+        "trial_expires_at": "2027-01-28T00:00:00Z",
+        "entitlement_expires_at": "2027-01-28T00:00:00Z",
+        "access_mode": "READ_WRITE",
+        "permissions": [
+          "sale.create"
+        ],
+        "history_permissions": [
+          "history.read"
+        ],
+        "owner_override": true
+      }
+    },
+    {
+      "name": "paid-expired-readonly",
+      "schema": "Context",
+      "valid": true,
+      "value": {
+        "contract_version": "1",
+        "authenticated": true,
+        "account_id": "fixture-account",
+        "product_account_id": "fixture-pos-account",
+        "tenant_id": "ST00001",
+        "tenant_code": "SR00001",
+        "device_id": "fixture-device",
+        "device_jkt": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "session_id": "fixture-session",
+        "authorization_epoch": 1,
+        "authority_revision": 1,
+        "server_time": "2027-01-28T00:00:00Z",
+        "account_status": "ACTIVE",
+        "tenant_status": "ACTIVE",
+        "product_status": "ACTIVE",
+        "subscription_status": "EXPIRED",
+        "plan": "PRO",
+        "storage_mode": "LOCAL_ONLY",
+        "trial_started_at": null,
+        "trial_expires_at": null,
+        "entitlement_expires_at": "2027-01-28T00:00:00Z",
+        "access_mode": "READ_ONLY",
+        "permissions": [],
+        "history_permissions": [
+          "history.read"
+        ]
+      }
+    }
+  ]
+}

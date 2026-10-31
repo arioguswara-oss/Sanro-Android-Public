@@ -1,0 +1,1581 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SANRO POS2 Mobile Auth \u2014 PROPOSED, NOT DEPLOYED",
+    "version": "0.1.0-proposal",
+    "description": "Docs-only contract candidate for isolated staging. No adapter is implemented. Operational activation is FREE only. Recognized paid plans may authenticate for read-only history; paid operational modes are outside this adapter."
+  },
+  "servers": [
+    {
+      "url": "https://pos2-mobile-staging.invalid/api/mobile/v1",
+      "description": "Placeholder, deliberately non-routable; Owner must assign isolated staging"
+    }
+  ],
+  "paths": {
+    "/challenges": {
+      "post": {
+        "operationId": "challenges_post",
+        "summary": "Unauthenticated nonce issuance; no account state",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success; no-store. See cross-field authorization constraints in PROPOSAL.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChallengeResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Redacted fail-closed error. Mapping in acceptance.feature / PROPOSAL.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChallengeRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "operationId": "login_post",
+        "summary": "Authenticate; never automatically acquire operational slot",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success; no-store. See cross-field authorization constraints in PROPOSAL.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenPairResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Redacted fail-closed error. Mapping in acceptance.feature / PROPOSAL.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "DPoP",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 32
+            },
+            "description": "RFC 9449 profile, ES256; nonce and jti replay checked. ath required with access token. No Bearer fallback."
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            },
+            "description": "Same logical command keeps key; retries require fresh proof/nonce. Bound response replay window 10 minutes."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/session": {
+      "get": {
+        "operationId": "session_get",
+        "summary": "Revalidate identity and entitlement, including expired read-only",
+        "security": [
+          {
+            "deviceAccess": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; no-store. See cross-field authorization constraints in PROPOSAL.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Redacted fail-closed error. Mapping in acceptance.feature / PROPOSAL.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "DPoP",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 32
+            },
+            "description": "RFC 9449 profile, ES256; nonce and jti replay checked. ath required with access token. No Bearer fallback."
+          }
+        ]
+      }
+    },
+    "/refresh": {
+      "post": {
+        "operationId": "refresh_post",
+        "summary": "Rotate refresh family; no write lease extension",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success; no-store. See cross-field authorization constraints in PROPOSAL.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenPairResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Redacted fail-closed error. Mapping in acceptance.feature / PROPOSAL.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "DPoP",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 32
+            },
+            "description": "RFC 9449 profile, ES256; nonce and jti replay checked. ath required with access token. No Bearer fallback."
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            },
+            "description": "Same logical command keeps key; retries require fresh proof/nonce. Bound response replay window 10 minutes."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/activation": {
+      "post": {
+        "operationId": "activation_post",
+        "summary": "Acquire single tenant device slot; issue recorded signed lease",
+        "security": [
+          {
+            "deviceAccess": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; no-store. See cross-field authorization constraints in PROPOSAL.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaseResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Redacted fail-closed error. Mapping in acceptance.feature / PROPOSAL.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "DPoP",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 32
+            },
+            "description": "RFC 9449 profile, ES256; nonce and jti replay checked. ath required with access token. No Bearer fallback."
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            },
+            "description": "Same logical command keeps key; retries require fresh proof/nonce. Bound response replay window 10 minutes."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommandRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/leases": {
+      "post": {
+        "operationId": "leases_post",
+        "summary": "Renew only current authorized binding",
+        "security": [
+          {
+            "deviceAccess": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; no-store. See cross-field authorization constraints in PROPOSAL.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaseResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Redacted fail-closed error. Mapping in acceptance.feature / PROPOSAL.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "DPoP",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 32
+            },
+            "description": "RFC 9449 profile, ES256; nonce and jti replay checked. ath required with access token. No Bearer fallback."
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            },
+            "description": "Same logical command keeps key; retries require fresh proof/nonce. Bound response replay window 10 minutes."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommandRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/recovery": {
+      "post": {
+        "operationId": "recovery_post",
+        "summary": "Reauthenticate proposed replacement key; no revocation",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success; no-store. See cross-field authorization constraints in PROPOSAL.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoveryResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Redacted fail-closed error. Mapping in acceptance.feature / PROPOSAL.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "DPoP",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 32
+            },
+            "description": "RFC 9449 profile, ES256; nonce and jti replay checked. ath required with access token. No Bearer fallback."
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            },
+            "description": "Same logical command keeps key; retries require fresh proof/nonce. Bound response replay window 10 minutes."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecoveryRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/recovery/confirm": {
+      "post": {
+        "operationId": "recovery_confirm_post",
+        "summary": "Explicit recovery reservation; no token or lease returned",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success; no-store. See cross-field authorization constraints in PROPOSAL.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoveryConfirmedResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Redacted fail-closed error. Mapping in acceptance.feature / PROPOSAL.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "DPoP",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 32
+            },
+            "description": "RFC 9449 profile, ES256; nonce and jti replay checked. ath required with access token. No Bearer fallback."
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            },
+            "description": "Same logical command keeps key; retries require fresh proof/nonce. Bound response replay window 10 minutes."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmRecoveryRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/logout": {
+      "post": {
+        "operationId": "logout_post",
+        "summary": "Revoke token family; retain slot while offline lease may remain",
+        "security": [
+          {
+            "deviceAccess": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; no-store. See cross-field authorization constraints in PROPOSAL.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogoutResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Redacted fail-closed error. Mapping in acceptance.feature / PROPOSAL.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "DPoP",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 32
+            },
+            "description": "RFC 9449 profile, ES256; nonce and jti replay checked. ath required with access token. No Bearer fallback."
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            },
+            "description": "Same logical command keeps key; retries require fresh proof/nonce. Bound response replay window 10 minutes."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommandRequest"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "deviceAccess": {
+        "type": "http",
+        "scheme": "DPoP",
+        "description": "Opaque access token bound to same DPoP key; proof header also required."
+      }
+    },
+    "schemas": {
+      "PublicJwk": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kty",
+          "crv",
+          "x",
+          "y"
+        ],
+        "properties": {
+          "kty": {
+            "type": "string",
+            "enum": [
+              "EC"
+            ]
+          },
+          "crv": {
+            "type": "string",
+            "enum": [
+              "P-256"
+            ]
+          },
+          "x": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          },
+          "y": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          }
+        }
+      },
+      "ChallengeRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "purpose",
+          "public_jwk"
+        ],
+        "properties": {
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "LOGIN",
+              "SESSION",
+              "REFRESH",
+              "ACTIVATE",
+              "LEASE",
+              "RECOVER",
+              "CONFIRM_RECOVERY",
+              "LOGOUT"
+            ]
+          },
+          "public_jwk": {
+            "$ref": "#/components/schemas/PublicJwk"
+          }
+        }
+      },
+      "Challenge": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "challenge_id",
+          "nonce",
+          "server_time",
+          "expires_at"
+        ],
+        "properties": {
+          "challenge_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "nonce": {
+            "type": "string",
+            "minLength": 32
+          },
+          "server_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "email",
+          "password",
+          "challenge_id"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024,
+            "writeOnly": true
+          },
+          "challenge_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      },
+      "RefreshRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "refresh_token",
+          "challenge_id"
+        ],
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "minLength": 32,
+            "maxLength": 4096,
+            "writeOnly": true
+          },
+          "challenge_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      },
+      "CommandRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "challenge_id"
+        ],
+        "properties": {
+          "challenge_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      },
+      "RecoveryRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "email",
+          "password",
+          "challenge_id"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024,
+            "writeOnly": true
+          },
+          "challenge_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      },
+      "ConfirmRecoveryRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "recovery_id",
+          "confirm_revoke",
+          "challenge_id"
+        ],
+        "properties": {
+          "recovery_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "confirm_revoke": {
+            "const": true
+          },
+          "challenge_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      },
+      "Context": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "contract_version",
+          "authenticated",
+          "account_id",
+          "product_account_id",
+          "tenant_id",
+          "tenant_code",
+          "device_id",
+          "device_jkt",
+          "session_id",
+          "authorization_epoch",
+          "authority_revision",
+          "server_time",
+          "account_status",
+          "tenant_status",
+          "product_status",
+          "subscription_status",
+          "plan",
+          "storage_mode",
+          "trial_started_at",
+          "trial_expires_at",
+          "entitlement_expires_at",
+          "access_mode",
+          "permissions",
+          "history_permissions"
+        ],
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "enum": [
+              "1"
+            ]
+          },
+          "authenticated": {
+            "const": true
+          },
+          "account_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "product_account_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "tenant_id": {
+            "type": "string",
+            "pattern": "^ST[0-9]{5,}$"
+          },
+          "tenant_code": {
+            "type": "string",
+            "pattern": "^SR[0-9]{5,}$"
+          },
+          "device_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "device_jkt": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          },
+          "session_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "authorization_epoch": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "authority_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "server_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "account_status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE"
+            ]
+          },
+          "tenant_status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE"
+            ]
+          },
+          "product_status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE"
+            ]
+          },
+          "subscription_status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "EXPIRED"
+            ]
+          },
+          "plan": {
+            "type": "string",
+            "enum": [
+              "FREE",
+              "STARTER",
+              "PRO"
+            ]
+          },
+          "storage_mode": {
+            "type": "string",
+            "enum": [
+              "LOCAL_ONLY"
+            ]
+          },
+          "trial_started_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "trial_expires_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "entitlement_expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "access_mode": {
+            "type": "string",
+            "enum": [
+              "READ_WRITE",
+              "READ_ONLY"
+            ]
+          },
+          "permissions": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "product.write",
+                "cart.write",
+                "stock.write",
+                "sale.create"
+              ]
+            }
+          },
+          "history_permissions": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "history.read",
+                "stock.read",
+                "report.read",
+                "history.export",
+                "receipt.reprint"
+              ]
+            }
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "subscription_status": {
+                  "const": "EXPIRED"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "access_mode": {
+                  "const": "READ_ONLY"
+                },
+                "permissions": {
+                  "maxItems": 0
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "access_mode": {
+                  "const": "READ_ONLY"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "permissions": {
+                  "maxItems": 0
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "plan": {
+                  "const": "FREE"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "trial_started_at": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "trial_expires_at": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "plan": {
+                  "enum": [
+                    "STARTER",
+                    "PRO"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "access_mode": {
+                  "const": "READ_ONLY"
+                },
+                "permissions": {
+                  "maxItems": 0
+                }
+              }
+            }
+          }
+        ]
+      },
+      "TokenPair": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "access_token",
+          "token_type",
+          "expires_in",
+          "refresh_token",
+          "refresh_expires_at",
+          "context"
+        ],
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "minLength": 32,
+            "maxLength": 4096
+          },
+          "token_type": {
+            "type": "string",
+            "enum": [
+              "DPoP"
+            ]
+          },
+          "expires_in": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "refresh_token": {
+            "type": "string",
+            "minLength": 32,
+            "maxLength": 4096
+          },
+          "refresh_expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "context": {
+            "$ref": "#/components/schemas/Context"
+          }
+        }
+      },
+      "LeaseClaims": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "iss",
+          "aud",
+          "sub",
+          "product_account_id",
+          "tenant_id",
+          "tenant_code",
+          "device_id",
+          "session_id",
+          "cnf",
+          "authorization_epoch",
+          "authority_revision",
+          "plan",
+          "storage_mode",
+          "permissions",
+          "history_permissions",
+          "iat",
+          "nbf",
+          "exp",
+          "trial_started_at",
+          "trial_expires_at",
+          "entitlement_expires_at",
+          "jti"
+        ],
+        "properties": {
+          "iss": {
+            "type": "string",
+            "format": "uri"
+          },
+          "aud": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "sub": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "product_account_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "tenant_id": {
+            "type": "string",
+            "pattern": "^ST[0-9]{5,}$"
+          },
+          "tenant_code": {
+            "type": "string",
+            "pattern": "^SR[0-9]{5,}$"
+          },
+          "device_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "session_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "cnf": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "jkt"
+            ],
+            "properties": {
+              "jkt": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{43}$"
+              }
+            }
+          },
+          "authorization_epoch": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "authority_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "plan": {
+            "type": "string",
+            "enum": [
+              "FREE"
+            ]
+          },
+          "storage_mode": {
+            "type": "string",
+            "enum": [
+              "LOCAL_ONLY"
+            ]
+          },
+          "permissions": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "product.write",
+                "cart.write",
+                "stock.write",
+                "sale.create"
+              ]
+            }
+          },
+          "history_permissions": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "history.read",
+                "stock.read",
+                "report.read",
+                "history.export",
+                "receipt.reprint"
+              ]
+            }
+          },
+          "iat": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "nbf": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "exp": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "trial_started_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "trial_expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "entitlement_expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "jti": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "description": "Decoded ES256 JWS payload. Cross-field time/identity/signature constraints in PROPOSAL.md are mandatory; schema validity alone never authorizes writes."
+      },
+      "Lease": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "context",
+          "offline_lease",
+          "lease_expires_at"
+        ],
+        "properties": {
+          "context": {
+            "$ref": "#/components/schemas/Context"
+          },
+          "offline_lease": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$"
+          },
+          "lease_expires_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "allOf": [
+          {
+            "properties": {
+              "context": {
+                "properties": {
+                  "access_mode": {
+                    "const": "READ_WRITE"
+                  },
+                  "subscription_status": {
+                    "const": "ACTIVE"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Recovery": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "recovery_id",
+          "expires_at",
+          "confirmation_required",
+          "server_time"
+        ],
+        "properties": {
+          "recovery_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "confirmation_required": {
+            "const": true
+          },
+          "server_time": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "RecoveryConfirmed": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "outcome",
+          "effective_after",
+          "server_time",
+          "next_action",
+          "authorization_epoch"
+        ],
+        "properties": {
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "TRANSFER_RESERVED"
+            ]
+          },
+          "effective_after": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "server_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "next_action": {
+            "type": "string",
+            "enum": [
+              "LOGIN_THEN_ACTIVATE"
+            ]
+          },
+          "authorization_epoch": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "Logout": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "outcome",
+          "server_time",
+          "slot_reserved_until"
+        ],
+        "properties": {
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "LOGGED_OUT"
+            ]
+          },
+          "server_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "slot_reserved_until": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ok",
+          "request_id",
+          "error"
+        ],
+        "properties": {
+          "ok": {
+            "const": false
+          },
+          "request_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "error": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "retryable",
+              "action"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "AUTH_INVALID",
+                  "EMAIL_VERIFICATION_REQUIRED",
+                  "REGISTRATION_INCOMPLETE",
+                  "ACCOUNT_SUSPENDED",
+                  "TENANT_SUSPENDED",
+                  "PRODUCT_SUSPENDED",
+                  "SUBSCRIPTION_INACTIVE",
+                  "POS_ACTIVATION_PENDING",
+                  "PLAN_UNSUPPORTED",
+                  "AUTHORITY_SCHEMA_INVALID",
+                  "CONTROL_PLANE_UNAVAILABLE",
+                  "DEVICE_PROOF_INVALID",
+                  "DEVICE_BINDING_MISMATCH",
+                  "ACTIVE_SESSION_EXISTS",
+                  "DEVICE_RECOVERY_REQUIRED",
+                  "TRANSFER_PENDING",
+                  "READ_ONLY",
+                  "LEASE_POLICY_UNAPPROVED",
+                  "REFRESH_REUSED",
+                  "TOKEN_EXPIRED",
+                  "IDEMPOTENCY_CONFLICT",
+                  "RECOVERY_STALE",
+                  "NONCE_REQUIRED",
+                  "VALIDATION_ERROR",
+                  "TOO_MANY_ATTEMPTS",
+                  "DEPENDENCY_UNAVAILABLE"
+                ]
+              },
+              "retryable": {
+                "type": "boolean"
+              },
+              "action": {
+                "type": "string",
+                "enum": [
+                  "NONE",
+                  "LOGIN",
+                  "VERIFY_EMAIL",
+                  "RESUME_REGISTRATION",
+                  "RECOVER_DEVICE",
+                  "WAIT",
+                  "RETRY",
+                  "SUBSCRIPTION",
+                  "GET_CHALLENGE"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "ChallengeResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ok",
+          "request_id",
+          "data"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "request_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "data": {
+            "$ref": "#/components/schemas/Challenge"
+          }
+        }
+      },
+      "ContextResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ok",
+          "request_id",
+          "data"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "request_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "data": {
+            "$ref": "#/components/schemas/Context"
+          }
+        }
+      },
+      "TokenPairResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ok",
+          "request_id",
+          "data"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "request_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "data": {
+            "$ref": "#/components/schemas/TokenPair"
+          }
+        }
+      },
+      "LeaseResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ok",
+          "request_id",
+          "data"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "request_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "data": {
+            "$ref": "#/components/schemas/Lease"
+          }
+        }
+      },
+      "RecoveryResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ok",
+          "request_id",
+          "data"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "request_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "data": {
+            "$ref": "#/components/schemas/Recovery"
+          }
+        }
+      },
+      "RecoveryConfirmedResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ok",
+          "request_id",
+          "data"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "request_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "data": {
+            "$ref": "#/components/schemas/RecoveryConfirmed"
+          }
+        }
+      },
+      "LogoutResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ok",
+          "request_id",
+          "data"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "request_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "data": {
+            "$ref": "#/components/schemas/Logout"
+          }
+        }
+      }
+    }
+  },
+  "x-status": "WORK / OWNER APPROVAL REQUIRED",
+  "x-cross-field-rules": "PROPOSAL.md",
+  "x-no-production-target": true
+}
