@@ -57,8 +57,14 @@ public final class AuthSessionManager {
             throw new SecurityException("Session cannot be restored without current online authorization");
         }
         policy.installVerifiedLeaseFromSession(lease);
-        state = State.AUTHORIZED_VOLATILE;
-        persisted.write(bootId, marker(state));
+        try {
+            persisted.write(bootId, marker(State.AUTHORIZED_VOLATILE));
+            state = State.AUTHORIZED_VOLATILE;
+        } catch (RuntimeException persistenceFailure) {
+            policy.lock();
+            state = State.RECOVERY_REQUIRED;
+            throw persistenceFailure;
+        }
     }
 
     public synchronized void logout() { lock(State.LOGGED_OUT); }
