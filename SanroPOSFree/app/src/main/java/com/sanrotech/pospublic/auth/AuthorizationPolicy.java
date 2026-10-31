@@ -25,20 +25,24 @@ public final class AuthorizationPolicy {
             lock();
             throw new SecurityException("Verified lease does not match this boot");
         }
-        grant = new AuthGrant(lease.accountId, lease.tenantId, lease.deviceId, lease.sessionId,
-                lease.bootId, AuthGrant.Mode.READ_WRITE, lease.permissions, lease.historyPermissions,
+        grant = new AuthGrant(lease.accountId, lease.productAccountId, lease.tenantId, lease.tenantCode,
+                lease.deviceId, lease.sessionId, lease.bootId, lease.authorizationEpoch, lease.authorityRevision,
+                AuthGrant.Mode.READ_WRITE, lease.permissions, lease.historyPermissions,
                 lease.expiryElapsedMillis, true, false, false);
     }
     public synchronized void lock() { grant = null; sandboxLocked = true; }
+    synchronized void installVerifiedLeaseFromSession(OfflineLeaseValidator.VerifiedLease lease) {
+        installVerifiedLease(lease);
+    }
     public synchronized boolean allows(String tenantId, Operation operation) {
         if (sandbox) return !sandboxLocked && same(tenantId, currentBootId);
         if (grant == null || !grant.authenticated || grant.suspended || grant.transferred
                 || !same(grant.tenantId, tenantId) || !same(grant.bootId, currentBootId)) return false;
         String capability = capability(operation);
+        if (grant.leaseExpiryElapsedMs <= SystemClock.elapsedRealtime()) return false;
         if (operation == Operation.PRODUCT_READ || operation == Operation.HISTORY_READ || operation == Operation.REPRINT)
             return grant.historyPermissions.contains(capability);
-        return grant.mode == AuthGrant.Mode.READ_WRITE && grant.leaseExpiryElapsedMs > SystemClock.elapsedRealtime()
-                && grant.permissions.contains(capability);
+        return grant.mode == AuthGrant.Mode.READ_WRITE && grant.permissions.contains(capability);
     }
     public synchronized boolean allow(String tenant, Operation operation) {
         if (!allows(tenant, operation)) throw new SecurityException("Otorisasi lokal tidak tersedia");
