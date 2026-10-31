@@ -33,13 +33,17 @@ public final class AuthSessionManager {
         if (previous == null) {
             state = State.RECOVERY_REQUIRED;
             persisted.write(bootId, "RECOVERY_REQUIRED");
-        } else if (!bootId.equals(previous.bootId)) {
-            state = State.REAUTHENTICATION_REQUIRED;
-            persisted.write(bootId, "REBOOT_REAUTH_REQUIRED");
         } else {
-            // A volatile grant is deliberately not reconstructed from disk.
-            state = fromMarker(previous.state);
-            if (state == State.AUTHORIZED_VOLATILE) state = State.REAUTHENTICATION_REQUIRED;
+            State restored = fromMarker(previous.state);
+            if (restored == State.LOGGED_OUT || restored == State.SECURITY_SUSPENDED
+                    || restored == State.DEVICE_TRANSFERRED || restored == State.RECOVERY_REQUIRED) {
+                // A reboot must never erase an explicit logout or security lock.
+                state = restored;
+            } else if (!bootId.equals(previous.bootId) || restored == State.AUTHORIZED_VOLATILE) {
+                state = State.REAUTHENTICATION_REQUIRED;
+            } else {
+                state = restored;
+            }
             policy.lock();
             persisted.write(bootId, marker(state));
         }

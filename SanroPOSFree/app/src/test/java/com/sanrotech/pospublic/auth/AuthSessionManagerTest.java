@@ -61,6 +61,20 @@ public class AuthSessionManagerTest {
         assertFalse(transferred.policy().allows("tenant-a", AuthorizationPolicy.Operation.SALE_WRITE));
     }
 
+    @Test public void logoutSuspensionAndTransferLocksSurviveReboot() {
+        AuthSessionManager manager = new AuthSessionManager(context, "boot-1", new PersistentAuthState(context));
+        manager.logout();
+        assertEquals(AuthSessionManager.State.LOGGED_OUT,
+                new AuthSessionManager(context, "boot-2", new PersistentAuthState(context)).state());
+        manager.securitySuspended();
+        assertEquals(AuthSessionManager.State.SECURITY_SUSPENDED,
+                new AuthSessionManager(context, "boot-3", new PersistentAuthState(context)).state());
+        manager.deviceTransferred();
+        AuthSessionManager transferred = new AuthSessionManager(context, "boot-4", new PersistentAuthState(context));
+        assertEquals(AuthSessionManager.State.DEVICE_TRANSFERRED, transferred.state());
+        assertFalse(transferred.policy().allows("tenant-a", AuthorizationPolicy.Operation.HISTORY_READ));
+    }
+
     @Test public void syntheticNullLeaseCannotOpenSession() {
         AuthSessionManager manager = new AuthSessionManager(context, "boot-1", new PersistentAuthState(context));
         try {
