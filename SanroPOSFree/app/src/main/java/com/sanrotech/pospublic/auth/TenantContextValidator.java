@@ -27,8 +27,8 @@ public final class TenantContextValidator {
         if (!oneOf(c.accountStatus,"ACTIVE") || !oneOf(c.tenantStatus,"ACTIVE") || !oneOf(c.productStatus,"ACTIVE")) return false;
         if (!oneOf(c.plan,"FREE","STARTER","PRO") || !oneOf(c.subscriptionStatus,"ACTIVE","EXPIRED")) return false;
         if (!oneOf(c.accessMode,"READ_WRITE","READ_ONLY") || c.permissions == null || c.historyPermissions == null) return false;
-        if (!known(c.permissions, "sale.create", "product.write", "cart.write")
-                || !known(c.historyPermissions,"history.read","receipt.reprint","history.export")) return false;
+        if (!known(c.permissions, "sale.create", "product.write", "cart.write", "stock.write")
+                || !known(c.historyPermissions,"history.read","stock.read","report.read","receipt.reprint","history.export")) return false;
         if ("FREE".equals(c.plan) && (c.trialStartedAt == null || c.trialExpiresAt == null)) return false;
         if ("LOCKED".equals(c.localDataAccess)) return false;
         if ("EXPIRED".equals(c.subscriptionStatus)) return !c.entitlementExpiresAt.isAfter(c.serverTime)

@@ -23,6 +23,9 @@ android {
 }
 dependencies {
     implementation 'androidx.room:room-runtime:2.6.1'
+    // JOSE parsing, ES256 JWS and RFC 7638 thumbprints. Signing is delegated to
+    // AndroidKeyStore through Nimbus' JOSE signer interface.
+    implementation 'com.nimbusds:nimbus-jose-jwt:10.10'
     annotationProcessor 'androidx.room:room-compiler:2.6.1'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.robolectric:robolectric:4.14.1'

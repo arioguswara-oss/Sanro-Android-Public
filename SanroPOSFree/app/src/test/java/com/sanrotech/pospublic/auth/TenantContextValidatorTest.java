@@ -33,6 +33,14 @@ public class TenantContextValidatorTest {
         c=context(); c.lockLocalDataOnSecurityEvent=false; assertFalse(valid(c));
         c=context(); c.localDataAccess="LOCKED"; assertFalse(valid(c));
     }
+    @Test public void acceptsTheContractStockAndHistoryPermissionNames() {
+        TenantContextValidator.Context c=context();
+        c.permissions=Collections.singleton("stock.write");
+        c.historyPermissions=new java.util.HashSet<>(java.util.Arrays.asList("stock.read","report.read"));
+        assertTrue(valid(c));
+        c.permissions=Collections.singleton("stock.admin");
+        assertFalse(valid(c));
+    }
     @Test public void bindsAccountTenantAndDeviceAndKeepsExpiredSubscriptionReadOnly() {
         TenantContextValidator.Context c=context(); c.tenantId="other"; assertFalse(valid(c));
         c=context(); c.subscriptionStatus="EXPIRED"; c.serverTime=c.entitlementExpiresAt;
