@@ -31,8 +31,8 @@ public final class AuthSessionManager {
         this.policy.lock();
         PersistentAuthState.Snapshot previous = persisted.read();
         if (previous == null) {
-            state = State.REAUTHENTICATION_REQUIRED;
-            persisted.write(bootId, "REAUTHENTICATION_REQUIRED");
+            state = State.RECOVERY_REQUIRED;
+            persisted.write(bootId, "RECOVERY_REQUIRED");
         } else if (!bootId.equals(previous.bootId)) {
             state = State.REAUTHENTICATION_REQUIRED;
             persisted.write(bootId, "REBOOT_REAUTH_REQUIRED");

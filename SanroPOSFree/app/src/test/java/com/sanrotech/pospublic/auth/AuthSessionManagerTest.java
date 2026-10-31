@@ -22,7 +22,7 @@ public class AuthSessionManagerTest {
 
     @Test public void firstRunAndProcessRestartAreLockedUntilVerifiedOnlineAuthorization() {
         AuthSessionManager first = new AuthSessionManager(context, "boot-1", new PersistentAuthState(context));
-        assertEquals(AuthSessionManager.State.REAUTHENTICATION_REQUIRED, first.state());
+        assertEquals(AuthSessionManager.State.RECOVERY_REQUIRED, first.state());
         assertFalse(first.policy().allows("tenant-a", AuthorizationPolicy.Operation.HISTORY_READ));
 
         context.getSharedPreferences("mobile_auth_security_state_v1", Context.MODE_PRIVATE)
