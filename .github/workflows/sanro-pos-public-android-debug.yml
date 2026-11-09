@@ -1,4 +1,4 @@
-name: SANRO POS Public Android - Local Free MVP Debug
+name: SANRO POS Public Android V2 - QA Debug + Emulator
 on:
   push:
     branches:
@@ -54,10 +54,10 @@ jobs:
             SanroPOSFree/app/build/reports/tests/
             SanroPOSFree/app/build/reports/lint-results-debug.*
           if-no-files-found: warn
-      - name: Upload APK prototype artifact
+      - name: Upload V2 internal QA APK
         uses: actions/upload-artifact@v4
         with:
-          name: sanro-pos-public-free-debug-PROTOTYPE
+          name: sanro-pos-public-v2-internal-qa-debug
           path: SanroPOSFree/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 7
@@ -76,7 +76,7 @@ jobs:
       - name: Download debug APK built by this workflow
         uses: actions/download-artifact@v4
         with:
-          name: sanro-pos-public-free-debug-PROTOTYPE
+          name: sanro-pos-public-v2-internal-qa-debug
           path: qa-apk
       - name: Enable KVM on hosted Ubuntu runner
         run: |
