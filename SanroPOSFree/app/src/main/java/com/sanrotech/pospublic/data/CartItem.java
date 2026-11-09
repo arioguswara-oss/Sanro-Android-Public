@@ -9,4 +9,7 @@ public class CartItem {
     public CartItem(@NonNull String tenantId, @NonNull String productId, int qty) {
         this.tenantId=tenantId; this.productId=productId; this.qty=qty;
     }
+    public boolean hasValidQuantity() {
+        return qty > 0;
+    }
 }
